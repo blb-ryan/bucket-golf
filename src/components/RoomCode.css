@@ -1,0 +1,33 @@
+.room-code-card {
+  text-align: center;
+  cursor: pointer;
+  padding: 24px;
+  background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
+  color: var(--white);
+}
+
+.room-code-card:active {
+  transform: scale(0.98);
+}
+
+.room-code-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: 700;
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+
+.room-code-value {
+  font-size: 3rem;
+  font-weight: 900;
+  letter-spacing: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.room-code-hint {
+  font-size: 0.75rem;
+  opacity: 0.5;
+  margin-top: 8px;
+}

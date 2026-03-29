@@ -1,0 +1,41 @@
+.history-card {
+  opacity: 0;
+}
+
+.history-type {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.history-date {
+  margin-top: 2px;
+}
+
+.history-result {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.history-win {
+  background: #E8F5E9;
+  color: var(--green);
+}
+
+.history-loss {
+  background: #FFEBEE;
+  color: var(--red);
+}
+
+.history-score {
+  font-weight: 900;
+  font-size: 1.2rem;
+  margin-top: 4px;
+}
+
+.text-right {
+  text-align: right;
+}

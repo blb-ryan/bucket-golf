@@ -1,0 +1,41 @@
+.join-form {
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+
+.join-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+}
+
+.join-title {
+  font-size: 1.4rem;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.join-code-input {
+  width: 100%;
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: 16px;
+  padding: 16px;
+  border: 3px solid var(--gray-light);
+  border-radius: var(--radius);
+  background: var(--white);
+  font-family: var(--font);
+  text-transform: uppercase;
+  transition: border-color var(--transition);
+}
+
+.join-code-input:focus {
+  border-color: var(--red);
+  outline: none;
+}
+
+.join-code-input::placeholder {
+  color: var(--gray-light);
+  letter-spacing: 16px;
+}

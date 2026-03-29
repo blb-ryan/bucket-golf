@@ -1,0 +1,43 @@
+.setup-form {
+  padding-top: 8px;
+}
+
+.setup-field {
+  margin-bottom: 24px;
+}
+
+.setup-label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+}
+
+.holes-picker {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.holes-option {
+  flex: 1;
+  padding: 12px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 800;
+  font-size: 1.1rem;
+  background: var(--gray-lighter);
+  color: var(--gray);
+  transition: all var(--transition);
+}
+
+.holes-active {
+  background: var(--green);
+  color: var(--white);
+  box-shadow: 0 3px 0 var(--green-dark);
+}
+
+.holes-slider {
+  width: 100%;
+  accent-color: var(--green);
+  height: 6px;
+}

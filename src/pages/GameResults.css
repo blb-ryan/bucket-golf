@@ -1,0 +1,77 @@
+.results-hero {
+  text-align: center;
+  padding: 24px 0;
+}
+
+.results-trophy {
+  font-size: 4rem;
+  margin-bottom: 12px;
+}
+
+.results-winner-name {
+  font-size: 1.8rem;
+  font-weight: 900;
+}
+
+.results-winner-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--orange);
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-top: 4px;
+}
+
+.results-winner-score {
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin-top: 8px;
+}
+
+.results-table {
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.results-table-header {
+  display: grid;
+  grid-template-columns: 50px 1fr 50px 60px;
+  padding: 10px 14px;
+  background: var(--dark);
+  color: var(--white);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.results-table-row {
+  display: grid;
+  grid-template-columns: 50px 1fr 50px 60px;
+  padding: 14px;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-lighter);
+  align-items: center;
+  opacity: 0;
+}
+
+.results-table-row:last-child { border-bottom: none; }
+
+.results-row-winner {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFFDE7 100%);
+}
+
+.results-row-me {
+  border-left: 3px solid var(--red);
+}
+
+.rr-rank { font-size: 1.1rem; }
+.rr-player { display: flex; align-items: center; gap: 8px; }
+.rr-name { font-weight: 700; font-size: 0.95rem; }
+.rr-buckets { text-align: center; font-weight: 700; color: var(--gray); }
+.rr-score { font-weight: 900; font-size: 1.1rem; text-align: right; }
+
+.results-meta {
+  opacity: 0.7;
+}

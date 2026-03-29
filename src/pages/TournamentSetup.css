@@ -1,0 +1,25 @@
+.option-row {
+  display: flex;
+  gap: 8px;
+}
+
+.option-btn {
+  flex: 1;
+  padding: 14px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 800;
+  font-size: 1.1rem;
+  background: var(--gray-lighter);
+  color: var(--gray);
+  transition: all var(--transition);
+}
+
+.option-active {
+  background: var(--yellow);
+  color: var(--dark);
+  box-shadow: 0 3px 0 #F9A825;
+}
+
+.option-wide {
+  font-size: 0.95rem;
+}

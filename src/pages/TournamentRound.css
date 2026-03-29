@@ -1,0 +1,92 @@
+.tournament-tabs {
+  display: flex;
+  background: var(--gray-lighter);
+  border-radius: var(--radius);
+  padding: 4px;
+  gap: 4px;
+}
+
+.tt-tab {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.9rem;
+  background: transparent;
+  color: var(--gray);
+  transition: all var(--transition);
+}
+
+.tt-active {
+  background: var(--white);
+  color: var(--dark);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.t-leaderboard {
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.t-lb-header {
+  display: grid;
+  grid-template-columns: 36px 1fr repeat(var(--round-count, 2), 44px) 56px;
+  padding: 8px 12px;
+  background: var(--dark);
+  color: var(--white);
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  gap: 4px;
+}
+
+.t-lb-row {
+  display: grid;
+  grid-template-columns: 36px 1fr repeat(var(--round-count, 2), 44px) 56px;
+  padding: 10px 12px;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-lighter);
+  align-items: center;
+  font-size: 0.85rem;
+  gap: 4px;
+}
+
+.t-lb-row:last-child { border-bottom: none; }
+
+.t-lb-leader {
+  background: linear-gradient(135deg, #FFF8E1, var(--white));
+}
+
+.t-lb-me {
+  border-left: 3px solid var(--red);
+}
+
+.t-lb-rank {
+  font-weight: 900;
+  font-size: 0.85rem;
+}
+
+.t-lb-name {
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.t-lb-rscore {
+  text-align: center;
+  font-weight: 600;
+  color: var(--gray);
+  font-variant-numeric: tabular-nums;
+}
+
+.t-lb-total {
+  text-align: right;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,74 @@
+.player-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  transition: all 0.3s ease;
+}
+
+.player-card-leader {
+  border: 2px solid var(--yellow);
+  background: linear-gradient(135deg, #FFF8E1 0%, var(--white) 100%);
+}
+
+.player-card-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-rank {
+  font-weight: 900;
+  font-size: 0.85rem;
+  color: var(--gray);
+  min-width: 28px;
+}
+
+.player-card-leader .player-rank {
+  color: var(--orange);
+}
+
+.player-emoji {
+  font-size: 1.5rem;
+}
+
+.player-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.player-name {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.player-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.player-card-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-ready {
+  color: var(--green);
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.player-score {
+  font-weight: 900;
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+  text-align: right;
+}

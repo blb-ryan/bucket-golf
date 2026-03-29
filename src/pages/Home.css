@@ -1,0 +1,68 @@
+.home-hero {
+  text-align: center;
+  padding: 32px 0 24px;
+}
+
+.home-bucket {
+  font-size: 4rem;
+  margin-bottom: 8px;
+  animation: bounce 2s ease infinite;
+}
+
+.home-greeting {
+  font-size: 1.6rem;
+  font-weight: 900;
+}
+
+.home-subtitle {
+  font-size: 1rem;
+  color: var(--gray);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.home-actions {
+  margin-top: 8px;
+}
+
+.home-quick {
+  position: relative;
+  overflow: hidden;
+}
+
+.home-quick::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: shimmer 3s ease infinite;
+}
+
+.home-footer {
+  justify-content: center;
+}
+
+.home-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  text-align: center;
+}
+
+.home-stat-value {
+  font-size: 1.3rem;
+  font-weight: 900;
+  color: var(--red);
+}
+
+.home-stat-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--gray);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}

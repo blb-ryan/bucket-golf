@@ -1,0 +1,29 @@
+{
+  "rules": {
+    "players": {
+      "$playerId": {
+        ".read": true,
+        ".write": true,
+        ".validate": "newData.hasChildren(['name', 'phone'])"
+      }
+    },
+    "phoneIndex": {
+      "$phone": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "games": {
+      "$gameId": {
+        ".read": true,
+        ".write": true
+      }
+    },
+    "tournaments": {
+      "$tournamentId": {
+        ".read": true,
+        ".write": true
+      }
+    }
+  }
+}
