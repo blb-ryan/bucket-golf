@@ -14,8 +14,8 @@ export default function Scoring() {
   const { player } = usePlayer()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const tournamentId = searchParams.get('tournament') || game?.tournamentId
   const [game, setGame] = useState(null)
+  const tournamentId = searchParams.get('tournament') || game?.tournamentId
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [bucketTrigger, setBucketTrigger] = useState(0)
   const [isNegativeOne, setIsNegativeOne] = useState(false)
