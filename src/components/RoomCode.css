@@ -4,6 +4,8 @@
   padding: 24px;
   background: linear-gradient(135deg, var(--dark) 0%, var(--dark-light) 100%);
   color: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
 }
 
 .room-code-card:active {
