@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { db, ref, onValue, off, update } from '../firebase'
+import { db, ref, onValue, off, update, remove } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
 import Navigation from '../components/Navigation'
 import ScoreInput from '../components/ScoreInput'
@@ -17,6 +17,7 @@ export default function Scoring() {
   const [game, setGame] = useState(null)
   const tournamentId = searchParams.get('tournament') || game?.tournamentId
   const [showLeaderboard, setShowLeaderboard] = useState(false)
+  const [showEndConfirm, setShowEndConfirm] = useState(false)
   const [bucketTrigger, setBucketTrigger] = useState(0)
   const [isNegativeOne, setIsNegativeOne] = useState(false)
 
@@ -26,6 +27,9 @@ export default function Scoring() {
       if (snap.exists()) {
         const data = snap.val()
         setGame(data)
+        if (data.status === 'cancelled') {
+          navigate('/', { replace: true })
+        }
         if (data.status === 'finished') {
           const tid = searchParams.get('tournament') || data.tournamentId
           if (tid) {
@@ -84,6 +88,12 @@ export default function Scoring() {
     } else {
       await update(ref(db, `games/${gameId}`), { currentHole: currentHole + 1 })
     }
+  }
+
+  async function endGame() {
+    await update(ref(db, `games/${gameId}`), { status: 'cancelled' })
+    await remove(ref(db, `games/${gameId}`))
+    navigate('/', { replace: true })
   }
 
   if (!game) return <div className="page flex-center"><div className="anim-spin" style={{ fontSize: '2rem' }}>🪣</div></div>
@@ -156,6 +166,25 @@ export default function Scoring() {
                   </p>
                 )}
               </div>
+            )}
+          </div>
+        )}
+
+        {isHost && (
+          <div className="mt-24">
+            {showEndConfirm ? (
+              <div className="card text-center anim-fade-in" style={{ border: '2px solid var(--red)' }}>
+                <p className="fw-bold">End this game?</p>
+                <p className="text-sm text-gray mt-8">All scores will be erased and players sent home.</p>
+                <div className="flex-row gap-8 mt-16" style={{ justifyContent: 'center' }}>
+                  <button className="btn btn-outline btn-sm" onClick={() => setShowEndConfirm(false)}>Cancel</button>
+                  <button className="btn btn-red btn-sm" onClick={endGame}>End Game</button>
+                </div>
+              </div>
+            ) : (
+              <button className="btn btn-outline btn-sm btn-block" style={{ color: 'var(--red)', borderColor: 'var(--red)' }} onClick={() => setShowEndConfirm(true)}>
+                End Game
+              </button>
             )}
           </div>
         )}
