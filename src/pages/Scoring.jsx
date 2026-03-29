@@ -73,7 +73,7 @@ export default function Scoring() {
     })
 
     if (bucket) {
-      setIsNegativeOne(score === -1)
+      setIsNegativeOne(score === 0)
       setBucketTrigger(t => t + 1)
     }
   }

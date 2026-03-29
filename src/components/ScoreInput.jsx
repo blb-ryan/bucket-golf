@@ -77,7 +77,7 @@ export default function ScoreInput({ hole, onSubmit, disabled }) {
         <div className={`score-preview-value ${score <= 0 ? 'score-negative' : ''}`}>
           {score >= 0 ? '+' : ''}{score}
         </div>
-        {score === -1 && <div className="score-preview-fire">🔥 INCREDIBLE!</div>}
+        {score === 0 && bucket && <div className="score-preview-fire">🔥 INCREDIBLE!</div>}
       </div>
 
       <button className="btn btn-red btn-lg btn-block mt-16" onClick={handleSubmit}>

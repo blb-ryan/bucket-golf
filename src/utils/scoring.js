@@ -1,5 +1,5 @@
 export function calculateHoleScore(hits, bucket) {
-  return bucket ? hits - 2 : hits
+  return bucket ? hits - 1 : hits
 }
 
 export function calculateTotalScore(scores) {
