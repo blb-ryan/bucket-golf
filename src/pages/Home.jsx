@@ -1,19 +1,74 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { usePlayer } from '../contexts/PlayerContext'
+import { db, ref, get } from '../firebase'
 import Navigation from '../components/Navigation'
 import './Home.css'
 
-const VERSION = 'Mar 30 08:10';
+const VERSION = 'Mar 30 08:30';
 
 export default function Home() {
   const { player } = usePlayer()
   const navigate = useNavigate()
+  const [activeGame, setActiveGame] = useState(null)
+
+  // Check for active games on mount
+  useEffect(() => {
+    if (!player?.id) return
+    async function checkActiveGames() {
+      // Check localStorage first for fast lookup
+      const cached = localStorage.getItem('bucketgolf_active_game')
+      if (cached) {
+        try {
+          const { gameId, type } = JSON.parse(cached)
+          if (type === 'tournament') {
+            const snap = await get(ref(db, `tournaments/${gameId}`))
+            if (snap.exists()) {
+              const t = snap.val()
+              if (t.playerInfo?.[player.id] && t.status !== 'finished' && t.status !== 'lobby') {
+                setActiveGame({ id: gameId, type: 'tournament' })
+                return
+              }
+            }
+          } else {
+            const snap = await get(ref(db, `games/${gameId}`))
+            if (snap.exists()) {
+              const g = snap.val()
+              if (g.players?.[player.id] && g.status === 'active') {
+                setActiveGame({ id: gameId, type: 'game' })
+                return
+              }
+            }
+          }
+        } catch {}
+      }
+      // Clear stale cache
+      localStorage.removeItem('bucketgolf_active_game')
+      setActiveGame(null)
+    }
+    checkActiveGames()
+  }, [player?.id])
+
+  function resumeGame() {
+    if (!activeGame) return
+    if (activeGame.type === 'tournament') {
+      navigate(`/tournament-round/${activeGame.id}`)
+    } else {
+      navigate(`/scoring/${activeGame.id}`)
+    }
+  }
 
   return (
     <>
       <Navigation title="Bucket Golf" />
       <div className="page grass-bg">
         <div className="home-version-banner">Build: {VERSION}</div>
+
+        {activeGame && (
+          <button className="home-resume-banner" onClick={resumeGame}>
+            🔴 You have an active game — tap to return
+          </button>
+        )}
 
         <div className="home-logo">
           <span className="home-logo-text">BUCKET</span>

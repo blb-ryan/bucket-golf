@@ -36,10 +36,19 @@ export default function Scoring() {
       }
       const data = snap.val()
       setGame(data)
+      if (data.status === 'active') {
+        const tid = searchParams.get('tournament') || data.tournamentId
+        localStorage.setItem('bucketgolf_active_game', JSON.stringify({
+          gameId: tid || gameId,
+          type: tid ? 'tournament' : 'game',
+        }))
+      }
       if (data.status === 'cancelled') {
+        localStorage.removeItem('bucketgolf_active_game')
         navigate('/', { replace: true })
       }
       if (data.status === 'finished') {
+        localStorage.removeItem('bucketgolf_active_game')
         const tid = searchParams.get('tournament') || data.tournamentId
         if (tid) {
           navigate(`/tournament-round/${tid}`, { replace: true })
@@ -201,7 +210,7 @@ export default function Scoring() {
   return (
     <>
       <Navigation
-        title="Bucket Golf"
+        title={game?.roundNumber ? `R${game.roundNumber} - Group ${game.groupNumber}` : 'Bucket Golf'}
         rightAction={
           <button className="nav-back" onClick={() => { setShowLeaderboard(!showLeaderboard); setLbTab('group') }} aria-label="Toggle leaderboard">
             📊
@@ -307,11 +316,16 @@ export default function Scoring() {
                     Waiting for {hostName} to advance...
                   </p>
                 )}
-                {!allSubmitted && (
-                  <p className="text-center text-sm text-gray mt-12">
-                    Waiting for all players...
-                  </p>
-                )}
+                {!allSubmitted && (() => {
+                  const waiting = Object.keys(game.players || {})
+                    .filter(pid => game.scores?.[pid]?.[String(currentHole)]?.score == null)
+                    .map(pid => game.players[pid]?.name || 'Player')
+                  return (
+                    <p className="text-center text-sm text-gray mt-12">
+                      Waiting for {waiting.join(', ')}...
+                    </p>
+                  )
+                })()}
               </div>
             )}
           </div>

@@ -4,13 +4,67 @@
   gap: 24px;
 }
 
+.score-input-hole-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 .score-input-hole {
   font-size: 1.1rem;
   font-weight: 800;
-  text-align: center;
   color: var(--gray);
   text-transform: uppercase;
   letter-spacing: 2px;
+}
+
+.score-help-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gray-lighter);
+  color: var(--gray);
+  font-size: 0.85rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.score-help-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-lg);
+  border: 2px solid var(--red);
+  text-align: center;
+}
+
+.score-help-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--red);
+  margin-bottom: 8px;
+}
+
+.score-help-text {
+  font-size: 0.85rem;
+  color: var(--dark);
+  line-height: 1.4;
+}
+
+.score-help-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--gray-lighter);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .score-input-section {

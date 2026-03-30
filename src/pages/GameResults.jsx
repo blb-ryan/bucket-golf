@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { db, ref, get } from '../firebase'
+import { db, ref, get, set, update, onValue } from '../firebase'
+import { generateUniqueRoomCode } from '../utils/roomCode'
 import { usePlayer } from '../contexts/PlayerContext'
 import { calculateTotalScore, calculateBucketCount, formatScore } from '../utils/scoring'
 import { updatePlayerStats } from '../utils/stats'
@@ -13,6 +14,8 @@ export default function GameResults() {
   const { player, updateStats, addGameToHistory } = usePlayer()
   const navigate = useNavigate()
   const [game, setGame] = useState(null)
+  const [rematchId, setRematchId] = useState(null)
+  const [rematchLoading, setRematchLoading] = useState(false)
   const statsWrittenRef = useRef(false)
 
   useEffect(() => {
@@ -23,6 +26,40 @@ export default function GameResults() {
     }
     load()
   }, [gameId, navigate])
+
+  // Listen for rematch game ID (set by host)
+  useEffect(() => {
+    const unsub = onValue(ref(db, `games/${gameId}/rematchGameId`), snap => {
+      if (snap.exists()) setRematchId(snap.val())
+    })
+    return () => unsub()
+  }, [gameId])
+
+  async function handleRematch() {
+    if (rematchLoading) return
+    setRematchLoading(true)
+    try {
+      const code = await generateUniqueRoomCode()
+      const newGame = {
+        type: game.type || 'casual',
+        host: player.id,
+        status: 'lobby',
+        settings: { holes: game.settings?.holes || 9 },
+        currentHole: 1,
+        players: {
+          [player.id]: { joinedAt: Date.now(), name: player.name, emoji: player.emoji },
+        },
+        scores: {},
+        createdAt: Date.now(),
+      }
+      await set(ref(db, `games/${code}`), newGame)
+      // Write rematch ID to original game so other players can find it
+      await update(ref(db, `games/${gameId}`), { rematchGameId: code })
+      navigate(`/lobby/${code}`)
+    } catch {
+      setRematchLoading(false)
+    }
+  }
 
   const rankings = useMemo(() => {
     if (!game) return []
@@ -77,6 +114,7 @@ export default function GameResults() {
 
   const winner = rankings[0]
   const totalHoles = game.settings?.holes || 9
+  const isHost = game.host === player?.id
 
   return (
     <>
@@ -123,9 +161,29 @@ export default function GameResults() {
           {totalHoles} holes
         </div>
 
-        <button className="btn btn-red btn-lg btn-block mt-24" onClick={() => navigate('/')}>
-          Back Home
-        </button>
+        {/* Rematch */}
+        {!game?.tournamentId && (
+          <div className="mt-24 flex-col gap-8">
+            {isHost && !rematchId && (
+              <button className="btn btn-green btn-lg btn-block" onClick={handleRematch} disabled={rematchLoading}>
+                {rematchLoading ? 'Setting up...' : '🔄 Rematch'}
+              </button>
+            )}
+            {rematchId && (
+              <button className="btn btn-green btn-lg btn-block" onClick={() => navigate(`/lobby/${rematchId}`)}>
+                🔄 Join Rematch
+              </button>
+            )}
+            <button className="btn btn-outline btn-block" onClick={() => navigate('/')}>
+              Back Home
+            </button>
+          </div>
+        )}
+        {game?.tournamentId && (
+          <button className="btn btn-red btn-lg btn-block mt-24" onClick={() => navigate('/')}>
+            Back Home
+          </button>
+        )}
       </div>
     </>
   )

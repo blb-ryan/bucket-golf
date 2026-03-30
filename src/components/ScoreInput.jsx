@@ -9,6 +9,7 @@ export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo }
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [showBucketAnim, setShowBucketAnim] = useState(false)
+  const [showHelp, setShowHelp] = useState(() => !localStorage.getItem('bucketgolf_help_seen'))
 
   const score = calculateHoleScore(hits, bucket)
 
@@ -59,7 +60,27 @@ export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo }
 
   return (
     <div className="score-input anim-fade-in-up">
-      <div className="score-input-hole">Hole {hole}</div>
+      <div className="score-input-hole-row">
+        <span className="score-input-hole">Hole {hole}</span>
+        <button className="score-help-btn" onClick={() => setShowHelp(!showHelp)} aria-label="Scoring help">?</button>
+      </div>
+
+      {showHelp && (
+        <div className="score-help-card anim-fade-in">
+          <p className="score-help-title">How Scoring Works</p>
+          <p className="score-help-text">Count your swings (hits) to get the ball in or near the bucket.</p>
+          <p className="score-help-text">If it goes <strong>IN the bucket</strong>, you get <strong>-1</strong> off your score!</p>
+          <div className="score-help-examples">
+            <span>3 hits + bucket = <strong>2</strong></span>
+            <span>3 hits, no bucket = <strong>3</strong></span>
+            <span>1 hit + bucket = <strong>E</strong> 🔥</span>
+          </div>
+          <p className="score-help-text" style={{ marginTop: 8 }}>Lowest total score wins!</p>
+          <button className="btn btn-sm btn-red mt-8" onClick={() => { setShowHelp(false); localStorage.setItem('bucketgolf_help_seen', '1') }}>
+            Got it!
+          </button>
+        </div>
+      )}
 
       <div className="score-input-section">
         <label className="score-input-label">Hits</label>
