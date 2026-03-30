@@ -66,3 +66,12 @@
   letter-spacing: 0.5px;
   margin-top: 2px;
 }
+
+.home-version {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--gray-light);
+  letter-spacing: 0.5px;
+}
