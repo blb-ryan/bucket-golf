@@ -5,7 +5,7 @@ import { db, ref, get } from '../firebase'
 import Navigation from '../components/Navigation'
 import './Home.css'
 
-const VERSION = 'Mar 30 08:30';
+const VERSION = 'Mar 30 09:05';
 
 export default function Home() {
   const { player } = usePlayer()
