@@ -92,9 +92,9 @@ export default function TournamentResults() {
     const me = leaderboard.find(r => r.playerId === player.id)
     if (!me) return
 
-    const cancel = celebrateChampion()
-
     const isWinner = me.rank === 1
+    const cancel = isWinner ? celebrateChampion() : null
+
     const newStats = updatePlayerStats(player.stats || {}, {
       score: me.total,
       buckets: me.buckets,

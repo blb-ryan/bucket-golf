@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { db, ref, onValue, update, set } from '../firebase'
+import { db, ref, onValue, update, set, remove } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
 import { generateUniqueRoomCode } from '../utils/roomCode'
 import { assignGroups } from '../utils/groups'
@@ -20,6 +20,10 @@ export default function TournamentLobby() {
   useEffect(() => {
     const tRef = ref(db, `tournaments/${tournamentId}`)
     const unsub = onValue(tRef, snap => {
+      if (!snap.exists()) {
+        navigate('/', { replace: true })
+        return
+      }
       if (snap.exists()) {
         const data = snap.val()
         setTournament(data)
@@ -42,6 +46,11 @@ export default function TournamentLobby() {
 
   async function leaveTournament() {
     await update(ref(db, `tournaments/${tournamentId}/playerInfo/${player.id}`), null)
+    navigate('/')
+  }
+
+  async function cancelTournament() {
+    await remove(ref(db, `tournaments/${tournamentId}`))
     navigate('/')
   }
 
@@ -171,6 +180,12 @@ export default function TournamentLobby() {
               Leave Tournament
             </button>
           </>
+        )}
+
+        {isHost && (
+          <button className="btn btn-outline btn-sm btn-block mt-24" style={{ color: 'var(--red)', borderColor: 'var(--red)' }} onClick={cancelTournament}>
+            Cancel Tournament
+          </button>
         )}
       </div>
     </>

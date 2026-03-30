@@ -53,9 +53,8 @@ export default function GameResults() {
     const me = rankings.find(r => r.playerId === player.id)
     if (!me) return
 
-    const cancel = celebrateWinner()
-
     const isWinner = me.rank === 1
+    const cancel = isWinner ? celebrateWinner() : null
     const newStats = updatePlayerStats(player.stats || {}, {
       score: me.total,
       buckets: me.buckets,

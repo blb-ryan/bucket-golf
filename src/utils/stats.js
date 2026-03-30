@@ -12,7 +12,7 @@ export function updatePlayerStats(currentStats, gameResult) {
   const prevTotal = (stats.avgScore || 0) * (totalGames - 1)
   stats.avgScore = Math.round(((prevTotal + gameResult.score) / totalGames) * 10) / 10
 
-  if (!stats.bestRound || gameResult.score < stats.bestRound) {
+  if (stats.bestRound == null || gameResult.score < stats.bestRound) {
     stats.bestRound = gameResult.score
   }
 

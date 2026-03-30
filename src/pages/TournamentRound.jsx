@@ -84,16 +84,15 @@ export default function TournamentRound() {
     return Object.values(round.groups).every(g => allGamesData[g.gameId]?.status === 'finished')
   }, [tournament, currentRound, allGamesData])
 
-  // Auto-advance to between_rounds when all groups finish (if auto advancement)
+  // Auto-advance when all groups finish — any client can trigger (idempotent write)
   useEffect(() => {
-    if (!allGroupsFinished || !isHost || !currentRound || isBetweenRounds) return
+    if (!allGroupsFinished || !currentRound || isBetweenRounds) return
     if (currentRound >= totalRounds) {
-      // Final round done — finish tournament
       update(ref(db, `tournaments/${tournamentId}`), { status: 'finished' })
     } else if (tournament?.settings?.advancement === 'auto') {
       update(ref(db, `tournaments/${tournamentId}`), { status: 'between_rounds' })
     }
-  }, [allGroupsFinished, isHost, currentRound, totalRounds, isBetweenRounds])
+  }, [allGroupsFinished, currentRound, totalRounds, isBetweenRounds, tournamentId, tournament?.settings?.advancement])
 
   // Tournament leaderboard across all rounds
   const tournamentLeaderboard = useMemo(() => {

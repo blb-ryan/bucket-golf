@@ -178,11 +178,21 @@ export default function Scoring() {
   }
 
   async function leaveGame() {
-    const updates = {
-      [`players/${player.id}`]: null,
-      [`scores/${player.id}`]: null,
+    const remainingPlayers = Object.keys(game?.players || {}).filter(id => id !== player.id)
+    if (remainingPlayers.length === 0) {
+      // Last player — delete the game
+      await remove(ref(db, `games/${gameId}`))
+    } else {
+      const updates = {
+        [`players/${player.id}`]: null,
+        [`scores/${player.id}`]: null,
+      }
+      // Transfer host if needed
+      if (game?.host === player.id) {
+        updates.host = remainingPlayers[0]
+      }
+      await update(ref(db, `games/${gameId}`), updates)
     }
-    await update(ref(db, `games/${gameId}`), updates)
     navigate('/', { replace: true })
   }
 
@@ -273,7 +283,7 @@ export default function Scoring() {
               onSubmit={handleSubmitScore}
               onUndo={handleUndoScore}
               disabled={hasSubmitted}
-              canUndo={hasSubmitted && !allSubmitted}
+              canUndo={hasSubmitted}
             />
 
             {hasSubmitted && (
