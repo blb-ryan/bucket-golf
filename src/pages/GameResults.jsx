@@ -121,7 +121,7 @@ export default function GameResults() {
         </div>
 
         <div className="results-meta mt-20 text-center text-sm text-gray">
-          {game.settings?.courseName || 'Quick Round'} &bull; {totalHoles} holes
+          {totalHoles} holes
         </div>
 
         <button className="btn btn-red btn-lg btn-block mt-24" onClick={() => navigate('/')}>

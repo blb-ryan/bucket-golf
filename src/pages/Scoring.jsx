@@ -111,7 +111,7 @@ export default function Scoring() {
   return (
     <>
       <Navigation
-        title={game.settings?.courseName || 'Game'}
+        title="Bucket Golf"
         rightAction={
           <button className="nav-back" onClick={() => setShowLeaderboard(!showLeaderboard)} aria-label="Toggle leaderboard">
             📊

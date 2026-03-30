@@ -157,7 +157,7 @@ export default function TournamentRound() {
         status: 'active',
         settings: {
           holes: 9,
-          courseName: `${tournament.settings.courseName} - R${nextRoundNum} G${i + 1}`,
+          courseName: `Round ${nextRoundNum} - Group ${i + 1}`,
         },
         currentHole: 1,
         players: {},

@@ -62,7 +62,7 @@ export default function TournamentLobby() {
         status: 'active',
         settings: {
           holes: 9,
-          courseName: `${tournament.settings.courseName} - R${roundNum} G${i + 1}`,
+          courseName: `Round ${roundNum} - Group ${i + 1}`,
         },
         currentHole: 1,
         players: {},

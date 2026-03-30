@@ -20,7 +20,7 @@ export default function QuickPlay() {
           type: 'quickPlay',
           host: player.id,
           status: 'lobby',
-          settings: { holes: 9, courseName: 'Quick Round' },
+          settings: { holes: 9 },
           currentHole: 1,
           players: {
             [player.id]: { joinedAt: Date.now(), name: player.name, emoji: player.emoji },

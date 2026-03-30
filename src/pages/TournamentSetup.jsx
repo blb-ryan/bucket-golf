@@ -11,7 +11,6 @@ export default function TournamentSetup() {
   const navigate = useNavigate()
   const [rounds, setRounds] = useState(2)
   const [groupSize, setGroupSize] = useState(2)
-  const [courseName, setCourseName] = useState('')
   const [advancement, setAdvancement] = useState('auto')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -26,7 +25,6 @@ export default function TournamentSetup() {
       settings: {
         rounds,
         groupSize,
-        courseName: courseName.trim() || 'Championship Course',
         advancement,
       },
       players: [player.id],
@@ -89,11 +87,6 @@ export default function TournamentSetup() {
           <p className="text-sm text-gray text-center mt-8">
             {advancement === 'auto' ? 'Next round starts when all groups finish' : 'Host manually starts next round'}
           </p>
-        </div>
-
-        <div className="setup-field">
-          <label className="setup-label">Course Name (optional)</label>
-          <input className="input" value={courseName} onChange={e => setCourseName(e.target.value)} placeholder="Championship Course" maxLength={30} />
         </div>
 
         {error && <p className="text-red text-sm text-center">{error}</p>}

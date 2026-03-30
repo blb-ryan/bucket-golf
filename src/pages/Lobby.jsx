@@ -58,7 +58,7 @@ export default function Lobby() {
 
   return (
     <>
-      <Navigation title={game.settings?.courseName || 'Game Lobby'} showBack />
+      <Navigation title="Game Lobby" showBack />
       <div className="page">
         <RoomCode code={gameId} />
 

@@ -10,7 +10,6 @@ export default function GameSetup() {
   const { player } = usePlayer()
   const navigate = useNavigate()
   const [holes, setHoles] = useState(9)
-  const [courseName, setCourseName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -23,7 +22,7 @@ export default function GameSetup() {
         type: 'casual',
         host: player.id,
         status: 'lobby',
-        settings: { holes, courseName: courseName.trim() || 'Backyard Course' },
+        settings: { holes },
         currentHole: 1,
         players: {
           [player.id]: { joinedAt: Date.now(), name: player.name, emoji: player.emoji },
@@ -57,11 +56,6 @@ export default function GameSetup() {
             </div>
             <input type="range" min={1} max={18} value={holes} onChange={e => setHoles(Number(e.target.value))} className="holes-slider" />
             <p className="text-center text-sm text-gray">{holes} hole{holes !== 1 ? 's' : ''}</p>
-          </div>
-
-          <div className="setup-field">
-            <label className="setup-label">Course Name (optional)</label>
-            <input className="input" value={courseName} onChange={e => setCourseName(e.target.value)} placeholder="Backyard Course" maxLength={30} />
           </div>
 
           {error && <p className="text-red text-sm text-center">{error}</p>}

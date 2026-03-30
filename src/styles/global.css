@@ -37,7 +37,7 @@ html, body {
   color: var(--dark);
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
-  overscroll-behavior: none;
+  overscroll-behavior: auto;
 }
 
 #root {
