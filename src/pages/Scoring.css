@@ -1,3 +1,110 @@
 .scoring-waiting {
   text-align: center;
 }
+
+.lb-tabs {
+  display: flex;
+  background: var(--gray-lighter);
+  border-radius: var(--radius);
+  padding: 4px;
+  gap: 4px;
+}
+
+.lb-tab {
+  flex: 1;
+  padding: 10px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.9rem;
+  background: transparent;
+  color: var(--gray);
+  transition: all var(--transition);
+}
+
+.lb-tab-active {
+  background: var(--white);
+  color: var(--dark);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.tournament-lb {
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.tournament-lb-header {
+  display: grid;
+  grid-template-columns: 44px 1fr 48px 56px;
+  padding: 10px 14px;
+  background: var(--dark);
+  color: var(--white);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.tournament-lb-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 48px 56px;
+  padding: 12px 14px;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-lighter);
+  align-items: center;
+}
+
+.tournament-lb-row:last-child {
+  border-bottom: none;
+}
+
+.tournament-lb-leader {
+  background: linear-gradient(135deg, #FFF8E1, var(--white));
+}
+
+.tournament-lb-me {
+  background: #E3F2FD;
+}
+
+.tournament-lb-leader.tournament-lb-me {
+  background: linear-gradient(135deg, #FFF8E1, #E3F2FD);
+}
+
+.tlb-rank {
+  font-weight: 900;
+  font-size: 0.85rem;
+  color: var(--gray);
+}
+
+.tournament-lb-leader .tlb-rank {
+  font-size: 1rem;
+}
+
+.tlb-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.tlb-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tlb-buckets {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray);
+  text-align: center;
+}
+
+.tlb-total {
+  font-weight: 900;
+  font-size: 1.1rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
