@@ -23,14 +23,18 @@ export default function TournamentResults() {
       const t = snap.val()
       setTournament(t)
 
-      // Load all group game data
-      const games = {}
+      // Load all group game data in parallel
+      const gameIds = []
       for (const [, round] of Object.entries(t.rounds || {})) {
         for (const [, group] of Object.entries(round.groups || {})) {
-          const gameSnap = await get(ref(db, `games/${group.gameId}`))
-          if (gameSnap.exists()) games[group.gameId] = gameSnap.val()
+          gameIds.push(group.gameId)
         }
       }
+      const snaps = await Promise.all(gameIds.map(id => get(ref(db, `games/${id}`))))
+      const games = {}
+      snaps.forEach((snap, i) => {
+        if (snap.exists()) games[gameIds[i]] = snap.val()
+      })
       setGamesData(games)
     }
     load()

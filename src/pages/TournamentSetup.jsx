@@ -18,6 +18,7 @@ export default function TournamentSetup() {
   async function handleCreate() {
     setLoading(true)
     setError('')
+    try {
     const code = await generateUniqueRoomCode()
     const data = {
       host: player.id,
@@ -27,18 +28,16 @@ export default function TournamentSetup() {
         groupSize,
         advancement,
       },
-      players: [player.id],
       playerInfo: {
-        [player.id]: { name: player.name, emoji: player.emoji },
+        [player.id]: { name: player.name, emoji: player.emoji, joinedAt: Date.now() },
       },
       rounds: {},
       leaderboard: {},
       createdAt: Date.now(),
     }
 
-    try {
-      await set(ref(db, `tournaments/${code}`), data)
-      navigate(`/tournament-lobby/${code}`)
+    await set(ref(db, `tournaments/${code}`), data)
+    navigate(`/tournament-lobby/${code}`)
     } catch {
       setError('Failed to create tournament. Try again.')
     }

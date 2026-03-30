@@ -7,11 +7,7 @@ export default function Navigation({ title, showBack = false, rightAction }) {
   const isHome = location.pathname === '/' || location.pathname === '/bucket-golf/'
 
   function handleBack() {
-    if (window.history.length > 1) {
-      navigate(-1)
-    } else {
-      navigate('/')
-    }
+    navigate('/')
   }
 
   return (

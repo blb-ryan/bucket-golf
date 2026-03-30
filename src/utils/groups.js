@@ -6,11 +6,3 @@ export function assignGroups(playerIds, groupSize) {
   }
   return groups
 }
-
-export function swapPlayers(groups, fromGroup, fromIndex, toGroup, toIndex) {
-  const newGroups = groups.map(g => [...g])
-  const temp = newGroups[fromGroup][fromIndex]
-  newGroups[fromGroup][fromIndex] = newGroups[toGroup][toIndex]
-  newGroups[toGroup][toIndex] = temp
-  return newGroups
-}

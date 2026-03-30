@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { calculateHoleScore } from '../utils/scoring'
 import './ScoreInput.css'
 
-export default function ScoreInput({ hole, onSubmit, disabled }) {
+export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo }) {
   const [hits, setHits] = useState(1)
   const [bucket, setBucket] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
   const [showBucketAnim, setShowBucketAnim] = useState(false)
 
   const score = calculateHoleScore(hits, bucket)
@@ -19,10 +21,23 @@ export default function ScoreInput({ hole, onSubmit, disabled }) {
     }
   }
 
-  function handleSubmit() {
-    if (submitted || disabled) return
-    setSubmitted(true)
-    onSubmit({ hits, bucket, score })
+  async function handleSubmit() {
+    if (submitted || disabled || submitting) return
+    setSubmitting(true)
+    setError('')
+    try {
+      await onSubmit({ hits, bucket, score })
+      setSubmitted(true)
+    } catch {
+      setError('Failed to submit. Tap to retry.')
+    }
+    setSubmitting(false)
+  }
+
+  function handleUndo() {
+    setSubmitted(false)
+    setError('')
+    onUndo?.()
   }
 
   if (submitted) {
@@ -33,6 +48,11 @@ export default function ScoreInput({ hole, onSubmit, disabled }) {
           {score >= 0 ? '+' : ''}{score}
         </div>
         {bucket && <div className="score-submitted-bucket">🪣 BUCKET!</div>}
+        {canUndo && (
+          <button className="btn btn-outline btn-sm mt-12" onClick={handleUndo}>
+            Edit Score
+          </button>
+        )}
       </div>
     )
   }
@@ -81,8 +101,10 @@ export default function ScoreInput({ hole, onSubmit, disabled }) {
         {hits === 1 && bucket && <div className="score-preview-fire">🔥 INCREDIBLE!</div>}
       </div>
 
-      <button className="btn btn-red btn-lg btn-block mt-16" onClick={handleSubmit}>
-        Submit Score
+      {error && <p className="text-red text-sm text-center mt-8">{error}</p>}
+
+      <button className="btn btn-red btn-lg btn-block mt-16" onClick={handleSubmit} disabled={submitting}>
+        {submitting ? 'Submitting...' : 'Submit Score'}
       </button>
     </div>
   )

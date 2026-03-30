@@ -136,7 +136,7 @@ export default function TournamentRound() {
   }
 
   function generateNextGroups() {
-    const g = assignGroups(tournament.players, tournament.settings.groupSize)
+    const g = assignGroups(Object.keys(tournament.playerInfo || {}), tournament.settings.groupSize)
     setNextGroups(g)
   }
 

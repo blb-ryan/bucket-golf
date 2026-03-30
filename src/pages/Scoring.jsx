@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { db, ref, onValue, update, remove } from '../firebase'
+import { db, ref, onValue, update, remove, set } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
 import Navigation from '../components/Navigation'
 import ScoreInput from '../components/ScoreInput'
@@ -48,6 +48,7 @@ export default function Scoring() {
   const isHost = game?.host === player.id
   const currentHole = game?.currentHole || 1
   const totalHoles = game?.settings?.holes || 9
+  const hostName = game?.players?.[game?.host]?.name || 'host'
 
   const playerNames = useMemo(() => {
     const names = {}
@@ -69,7 +70,7 @@ export default function Scoring() {
   const hasSubmitted = myScore?.score != null
 
   const allSubmitted = useMemo(() => {
-    if (!game?.players || !game?.scores) return false
+    if (!game?.players) return false
     return Object.keys(game.players).every(
       pid => game.scores?.[pid]?.[String(currentHole)]?.score != null
     )
@@ -85,6 +86,10 @@ export default function Scoring() {
     }
   }, [gameId, player.id, currentHole])
 
+  const handleUndoScore = useCallback(async () => {
+    await set(ref(db, `games/${gameId}/scores/${player.id}/${currentHole}`), null)
+  }, [gameId, player.id, currentHole])
+
   async function nextHole() {
     if (currentHole >= totalHoles) {
       await update(ref(db, `games/${gameId}`), { status: 'finished' })
@@ -95,13 +100,16 @@ export default function Scoring() {
 
   async function endGame() {
     await update(ref(db, `games/${gameId}`), { status: 'cancelled' })
-    // Small delay so other clients pick up the cancelled status before removal
-    setTimeout(() => remove(ref(db, `games/${gameId}`)), 1000)
+    setTimeout(() => remove(ref(db, `games/${gameId}`)), 1500)
     navigate('/', { replace: true })
   }
 
   async function leaveGame() {
-    const updates = { [`players/${player.id}`]: null }
+    // Remove player AND their scores
+    const updates = {
+      [`players/${player.id}`]: null,
+      [`scores/${player.id}`]: null,
+    }
     await update(ref(db, `games/${gameId}`), updates)
     navigate('/', { replace: true })
   }
@@ -146,7 +154,9 @@ export default function Scoring() {
               key={currentHole}
               hole={currentHole}
               onSubmit={handleSubmitScore}
+              onUndo={handleUndoScore}
               disabled={hasSubmitted}
+              canUndo={hasSubmitted && !allSubmitted}
             />
 
             {hasSubmitted && (
@@ -167,7 +177,7 @@ export default function Scoring() {
                 )}
                 {allSubmitted && !isHost && (
                   <p className="text-center text-sm text-gray mt-12">
-                    Waiting for host to advance...
+                    Waiting for {hostName} to advance...
                   </p>
                 )}
                 {!allSubmitted && (

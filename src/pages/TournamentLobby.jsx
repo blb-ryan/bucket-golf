@@ -36,8 +36,13 @@ export default function TournamentLobby() {
   }, [tournamentId, navigate])
 
   const isHost = tournament?.host === player.id
-  const playerList = tournament?.players || []
   const playerInfo = tournament?.playerInfo || {}
+  const playerList = Object.keys(playerInfo)
+
+  async function leaveTournament() {
+    await update(ref(db, `tournaments/${tournamentId}/playerInfo/${player.id}`), null)
+    navigate('/')
+  }
 
   function generateGroups() {
     const g = assignGroups(playerList, tournament.settings.groupSize)
@@ -159,9 +164,14 @@ export default function TournamentLobby() {
         )}
 
         {!isHost && (
-          <p className="text-center text-sm text-gray mt-24">
-            Waiting for host to start the tournament...
-          </p>
+          <>
+            <p className="text-center text-sm text-gray mt-24">
+              Waiting for host to start the tournament...
+            </p>
+            <button className="btn btn-outline btn-sm btn-block mt-12" onClick={leaveTournament}>
+              Leave Tournament
+            </button>
+          </>
         )}
       </div>
     </>

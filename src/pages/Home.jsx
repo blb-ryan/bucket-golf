@@ -3,7 +3,7 @@ import { usePlayer } from '../contexts/PlayerContext'
 import Navigation from '../components/Navigation'
 import './Home.css'
 
-const VERSION = 'Mar 30 07:05';
+const VERSION = 'Mar 30 07:22';
 
 export default function Home() {
   const { player } = usePlayer()

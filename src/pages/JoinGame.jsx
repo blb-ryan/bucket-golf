@@ -44,15 +44,11 @@ export default function JoinGame() {
         const tourney = tourneySnap.val()
         if (tourney.status === 'finished') { setError('This tournament has already ended'); setLoading(false); return }
 
-        // Join the tournament
-        const players = tourney.players || []
-        if (!players.includes(player.id)) {
-          players.push(player.id)
-          await update(ref(db, `tournaments/${roomCode}`), { players })
-        }
+        // Join the tournament (write to playerInfo object — race-safe)
         await update(ref(db, `tournaments/${roomCode}/playerInfo/${player.id}`), {
           name: player.name,
           emoji: player.emoji,
+          joinedAt: Date.now(),
         })
         navigate(`/tournament-lobby/${roomCode}`)
         return
