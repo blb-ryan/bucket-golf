@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { db, ref, set } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
 import { generateUniqueRoomCode } from '../utils/roomCode'
+import { createGameData } from '../utils/gameFactory'
 
 export default function QuickPlay() {
   const { player } = usePlayer()
@@ -16,19 +17,7 @@ export default function QuickPlay() {
     async function create() {
       try {
         const code = await generateUniqueRoomCode()
-        const gameData = {
-          type: 'quickPlay',
-          host: player.id,
-          status: 'lobby',
-          settings: { holes: 9 },
-          currentHole: 1,
-          players: {
-            [player.id]: { joinedAt: Date.now(), name: player.name, emoji: player.emoji },
-          },
-          scores: {},
-          createdAt: Date.now(),
-        }
-        await set(ref(db, `games/${code}`), gameData)
+        await set(ref(db, `games/${code}`), createGameData(player, { type: 'quickPlay' }))
         navigate(`/lobby/${code}`, { replace: true })
       } catch {
         navigate('/', { replace: true })

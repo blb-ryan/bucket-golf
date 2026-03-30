@@ -40,7 +40,9 @@ export default function Home() {
               }
             }
           }
-        } catch {}
+        } catch (err) {
+          console.warn('Active game check failed:', err)
+        }
       }
       // Clear stale cache
       localStorage.removeItem('bucketgolf_active_game')

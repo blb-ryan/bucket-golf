@@ -35,6 +35,11 @@ export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo }
     setSubmitting(false)
   }
 
+  function dismissHelp() {
+    setShowHelp(false)
+    localStorage.setItem('bucketgolf_help_seen', '1')
+  }
+
   function handleUndo() {
     setSubmitted(false)
     setError('')
@@ -75,8 +80,8 @@ export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo }
             <span>3 hits, no bucket = <strong>3</strong></span>
             <span>1 hit + bucket = <strong>E</strong> 🔥</span>
           </div>
-          <p className="score-help-text" style={{ marginTop: 8 }}>Lowest total score wins!</p>
-          <button className="btn btn-sm btn-red mt-8" onClick={() => { setShowHelp(false); localStorage.setItem('bucketgolf_help_seen', '1') }}>
+          <p className="score-help-text mt-8">Lowest total score wins!</p>
+          <button className="btn btn-sm btn-red mt-8" onClick={dismissHelp}>
             Got it!
           </button>
         </div>

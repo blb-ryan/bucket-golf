@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { db, ref, set } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
 import { generateUniqueRoomCode } from '../utils/roomCode'
+import { createGameData } from '../utils/gameFactory'
 import Navigation from '../components/Navigation'
 import './GameSetup.css'
 
@@ -18,19 +19,7 @@ export default function GameSetup() {
     setError('')
     try {
       const code = await generateUniqueRoomCode()
-      const gameData = {
-        type: 'casual',
-        host: player.id,
-        status: 'lobby',
-        settings: { holes },
-        currentHole: 1,
-        players: {
-          [player.id]: { joinedAt: Date.now(), name: player.name, emoji: player.emoji },
-        },
-        scores: {},
-        createdAt: Date.now(),
-      }
-      await set(ref(db, `games/${code}`), gameData)
+      await set(ref(db, `games/${code}`), createGameData(player, { type: 'casual', holes }))
       navigate(`/lobby/${code}`)
     } catch {
       setError('Failed to create game. Try again.')

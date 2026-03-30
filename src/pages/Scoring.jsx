@@ -132,21 +132,17 @@ export default function Scoring() {
   const hostName = game?.players?.[game?.host]?.name || 'host'
   const isTournament = !!tournamentId
 
-  const playerNames = useMemo(() => {
+  const { playerNames, playerEmojis } = useMemo(() => {
     const names = {}
-    if (game?.players) {
-      Object.entries(game.players).forEach(([pid, p]) => { names[pid] = p.name })
-    }
-    return names
-  }, [JSON.stringify(game?.players)])
-
-  const playerEmojis = useMemo(() => {
     const emojis = {}
     if (game?.players) {
-      Object.entries(game.players).forEach(([pid, p]) => { emojis[pid] = p.emoji })
+      Object.entries(game.players).forEach(([pid, p]) => {
+        names[pid] = p.name
+        emojis[pid] = p.emoji
+      })
     }
-    return emojis
-  }, [JSON.stringify(game?.players)])
+    return { playerNames: names, playerEmojis: emojis }
+  }, [game?.players])
 
   const myScore = game?.scores?.[player.id]?.[String(currentHole)]
   const hasSubmitted = myScore?.score != null
@@ -156,6 +152,13 @@ export default function Scoring() {
     return Object.keys(game.players).every(
       pid => game.scores?.[pid]?.[String(currentHole)]?.score != null
     )
+  }, [game?.players, game?.scores, currentHole])
+
+  const waitingNames = useMemo(() => {
+    if (!game?.players) return []
+    return Object.keys(game.players)
+      .filter(pid => game.scores?.[pid]?.[String(currentHole)]?.score == null)
+      .map(pid => game.players[pid]?.name || 'Player')
   }, [game?.players, game?.scores, currentHole])
 
   const handleSubmitScore = useCallback(async ({ hits, bucket, score }) => {
@@ -316,22 +319,16 @@ export default function Scoring() {
                     Waiting for {hostName} to advance...
                   </p>
                 )}
-                {!allSubmitted && (() => {
-                  const waiting = Object.keys(game.players || {})
-                    .filter(pid => game.scores?.[pid]?.[String(currentHole)]?.score == null)
-                    .map(pid => game.players[pid]?.name || 'Player')
-                  return (
-                    <p className="text-center text-sm text-gray mt-12">
-                      Waiting for {waiting.join(', ')}...
-                    </p>
-                  )
-                })()}
+                {!allSubmitted && waitingNames.length > 0 && (
+                  <p className="text-center text-sm text-gray mt-12">
+                    Waiting for {waitingNames.join(', ')}...
+                  </p>
+                )}
               </div>
             )}
           </div>
         )}
 
-        {/* Host: End Game / Non-host: Leave Game */}
         <div className="mt-24">
           {isHost ? (
             showEndConfirm ? (
