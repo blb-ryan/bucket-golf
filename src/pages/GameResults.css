@@ -53,7 +53,6 @@
   background: var(--white);
   border-bottom: 1px solid var(--gray-lighter);
   align-items: center;
-  opacity: 0;
 }
 
 .results-table-row:last-child { border-bottom: none; }

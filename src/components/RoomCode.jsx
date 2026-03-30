@@ -6,11 +6,23 @@ export default function RoomCode({ code }) {
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(code)
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(code)
+      } else {
+        // Fallback for non-HTTPS or older browsers
+        const el = document.createElement('textarea')
+        el.value = code
+        el.style.position = 'fixed'
+        el.style.opacity = '0'
+        document.body.appendChild(el)
+        el.select()
+        document.execCommand('copy')
+        document.body.removeChild(el)
+      }
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      // Fallback: select text
+      setCopied(false)
     }
   }
 

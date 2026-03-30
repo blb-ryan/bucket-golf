@@ -132,10 +132,6 @@
   line-height: 1;
 }
 
-.score-negative {
-  color: var(--green);
-}
-
 .score-preview-fire {
   margin-top: 8px;
   font-size: 1rem;

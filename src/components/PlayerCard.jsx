@@ -13,7 +13,7 @@ export default function PlayerCard({ name, emoji, score, isHost, isReady, rank }
       </div>
       <div className="player-card-right">
         {isReady && <span className="player-ready">✓</span>}
-        {score != null && <span className="player-score">{score >= 0 ? '+' : ''}{score}</span>}
+        {score != null && <span className="player-score">{score === 0 ? 'E' : score > 0 ? `+${score}` : score}</span>}
       </div>
     </div>
   )

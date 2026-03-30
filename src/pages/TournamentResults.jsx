@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { db, ref, get } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
-import { calculateTotalScore, calculateBucketCount } from '../utils/scoring'
+import { calculateTotalScore, calculateBucketCount, formatScore } from '../utils/scoring'
 import { updatePlayerStats } from '../utils/stats'
 import { celebrateChampion } from '../components/BucketAnimation'
 import Navigation from '../components/Navigation'
@@ -128,7 +128,7 @@ export default function TournamentResults() {
           <h2 className="champion-name">{champion?.name}</h2>
           <p className="champion-label">TOURNAMENT CHAMPION</p>
           <div className="champion-score">
-            {champion?.total >= 0 ? '+' : ''}{champion?.total}
+            {formatScore(champion?.total)}
           </div>
           <p className="champion-detail">{roundCount} rounds • {roundCount * 9} holes • 🪣 {champion?.buckets} buckets</p>
         </div>
@@ -160,7 +160,7 @@ export default function TournamentResults() {
                 <span key={ri} className="tr-rscore">{r.rounds[ri + 1] ?? '—'}</span>
               ))}
               <span className={`tr-total ${r.total <= 0 ? 'score-negative' : ''}`}>
-                {r.total >= 0 ? '+' : ''}{r.total}
+                {formatScore(r.total)}
               </span>
             </div>
           ))}

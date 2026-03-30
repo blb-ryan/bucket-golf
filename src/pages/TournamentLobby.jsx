@@ -15,6 +15,7 @@ export default function TournamentLobby() {
   const [tournament, setTournament] = useState(null)
   const [groups, setGroups] = useState(null)
   const [showGroups, setShowGroups] = useState(false)
+  const [starting, setStarting] = useState(false)
 
   useEffect(() => {
     const tRef = ref(db, `tournaments/${tournamentId}`)
@@ -51,50 +52,48 @@ export default function TournamentLobby() {
   }
 
   async function startRound() {
-    if (!groups) return
+    if (!groups || starting) return
+    setStarting(true)
+    try {
+      const roundNum = 1
+      const roundData = { status: 'active', groups: {} }
 
-    const roundNum = 1
-    const roundData = { status: 'active', groups: {} }
+      // Generate all room codes in parallel
+      const codes = await Promise.all(groups.map(() => generateUniqueRoomCode()))
 
-    for (let i = 0; i < groups.length; i++) {
-      const gameCode = await generateUniqueRoomCode()
-      const gameData = {
-        type: 'tournament',
-        tournamentId,
-        roundNumber: roundNum,
-        groupNumber: i + 1,
-        host: groups[i][0],
-        status: 'active',
-        settings: {
-          holes: 9,
-          courseName: `Round ${roundNum} - Group ${i + 1}`,
-        },
-        currentHole: 1,
-        players: {},
-        scores: {},
-        createdAt: Date.now(),
-      }
-
-      for (const pid of groups[i]) {
-        gameData.players[pid] = {
-          joinedAt: Date.now(),
-          name: playerInfo[pid]?.name || 'Player',
-          emoji: playerInfo[pid]?.emoji || '🔴',
+      // Create all group games in parallel
+      await Promise.all(groups.map((group, i) => {
+        const gameData = {
+          type: 'tournament',
+          tournamentId,
+          roundNumber: roundNum,
+          groupNumber: i + 1,
+          host: group[0],
+          status: 'active',
+          settings: { holes: 9 },
+          currentHole: 1,
+          players: {},
+          scores: {},
+          createdAt: Date.now(),
         }
-      }
+        for (const pid of group) {
+          gameData.players[pid] = {
+            joinedAt: Date.now(),
+            name: playerInfo[pid]?.name || 'Player',
+            emoji: playerInfo[pid]?.emoji || '🔴',
+          }
+        }
+        roundData.groups[`group_${i + 1}`] = { players: group, gameId: codes[i] }
+        return set(ref(db, `games/${codes[i]}`), gameData)
+      }))
 
-      await set(ref(db, `games/${gameCode}`), gameData)
-
-      roundData.groups[`group_${i + 1}`] = {
-        players: groups[i],
-        gameId: gameCode,
-      }
+      await update(ref(db, `tournaments/${tournamentId}`), {
+        status: `round_${roundNum}`,
+        [`rounds/${roundNum}`]: roundData,
+      })
+    } catch {
+      setStarting(false)
     }
-
-    await update(ref(db, `tournaments/${tournamentId}`), {
-      status: `round_${roundNum}`,
-      [`rounds/${roundNum}`]: roundData,
-    })
   }
 
   if (!tournament) return <div className="page flex-center"><div className="anim-spin" style={{ fontSize: '2rem' }}>🏆</div></div>
@@ -154,8 +153,8 @@ export default function TournamentLobby() {
 
         {isHost && showGroups && (
           <div className="flex-col gap-8 mt-16">
-            <button className="btn btn-red btn-lg btn-block" onClick={startRound}>
-              Start Round 1
+            <button className="btn btn-red btn-lg btn-block" onClick={startRound} disabled={starting}>
+              {starting ? 'Starting...' : 'Start Round 1'}
             </button>
             <button className="btn btn-outline btn-sm btn-block" onClick={generateGroups}>
               Shuffle Groups

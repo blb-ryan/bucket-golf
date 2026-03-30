@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { calculateTotalScore, calculateBucketCount } from '../utils/scoring'
+import { calculateTotalScore, calculateBucketCount, formatScore } from '../utils/scoring'
 import './Leaderboard.css'
 
 export default function Leaderboard({ players, scores, currentHole, playerNames, playerEmojis, currentPlayerId }) {
@@ -42,7 +42,7 @@ export default function Leaderboard({ players, scores, currentHole, playerNames,
           </span>
           <span className="lb-buckets">🪣 {r.buckets}</span>
           <span className={`lb-total ${r.total <= 0 ? 'score-negative' : ''}`}>
-            {r.total >= 0 ? '+' : ''}{r.total}
+            {formatScore(r.total)}
           </span>
         </div>
       ))}

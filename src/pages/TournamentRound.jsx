@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { db, ref, onValue, update, set } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
-import { calculateTotalScore, calculateBucketCount } from '../utils/scoring'
+import { calculateTotalScore, calculateBucketCount, formatScore } from '../utils/scoring'
 import { generateUniqueRoomCode } from '../utils/roomCode'
 import { assignGroups } from '../utils/groups'
 import Navigation from '../components/Navigation'
@@ -292,7 +292,7 @@ export default function TournamentRound() {
                 <span key={ri} className="t-lb-rscore">{r.rounds[ri + 1] ?? '—'}</span>
               ))}
               <span className={`t-lb-total ${r.total <= 0 ? 'score-negative' : ''}`}>
-                {r.total >= 0 ? '+' : ''}{r.total}
+                {formatScore(r.total)}
               </span>
             </div>
           ))}

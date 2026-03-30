@@ -36,7 +36,7 @@ export default function History() {
                       {g.result === 'win' ? 'WIN' : 'LOSS'}
                     </div>
                     <div className="history-score">
-                      {g.score >= 0 ? '+' : ''}{g.score}
+                      {g.score === 0 ? 'E' : g.score > 0 ? `+${g.score}` : g.score}
                     </div>
                   </div>
                 </div>

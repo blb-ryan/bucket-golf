@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { calculateHoleScore } from '../utils/scoring'
+import { calculateHoleScore, formatScore } from '../utils/scoring'
 import './ScoreInput.css'
 
 export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo }) {
@@ -45,7 +45,7 @@ export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo }
       <div className="score-input-submitted anim-scale-in">
         <div className="score-submitted-label">Hole {hole} Score</div>
         <div className={`score-submitted-value ${score <= 0 ? 'score-negative' : ''}`}>
-          {score >= 0 ? '+' : ''}{score}
+          {formatScore(score)}
         </div>
         {bucket && <div className="score-submitted-bucket">🪣 BUCKET!</div>}
         {canUndo && (
@@ -96,7 +96,7 @@ export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo }
       <div className="score-input-preview">
         <div className="score-preview-label">Hole Score</div>
         <div className={`score-preview-value ${score <= 0 ? 'score-negative' : ''}`}>
-          {score >= 0 ? '+' : ''}{score}
+          {formatScore(score)}
         </div>
         {hits === 1 && bucket && <div className="score-preview-fire">🔥 INCREDIBLE!</div>}
       </div>

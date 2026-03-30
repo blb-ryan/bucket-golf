@@ -68,7 +68,6 @@
   align-items: center;
   font-size: 0.85rem;
   gap: 4px;
-  opacity: 0;
 }
 
 .tr-row:last-child { border-bottom: none; }
