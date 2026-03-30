@@ -54,7 +54,8 @@ export default function ScoreInput({ hole, onSubmit, disabled }) {
           <span className="counter-value">{hits}</span>
           <button
             className="counter-btn counter-plus"
-            onClick={() => setHits(hits + 1)}
+            onClick={() => setHits(Math.min(15, hits + 1))}
+            disabled={hits >= 15}
           >
             +
           </button>
@@ -77,7 +78,7 @@ export default function ScoreInput({ hole, onSubmit, disabled }) {
         <div className={`score-preview-value ${score <= 0 ? 'score-negative' : ''}`}>
           {score >= 0 ? '+' : ''}{score}
         </div>
-        {score === 0 && bucket && <div className="score-preview-fire">🔥 INCREDIBLE!</div>}
+        {hits === 1 && bucket && <div className="score-preview-fire">🔥 INCREDIBLE!</div>}
       </div>
 
       <button className="btn btn-red btn-lg btn-block mt-16" onClick={handleSubmit}>

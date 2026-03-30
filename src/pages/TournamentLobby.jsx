@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { db, ref, onValue, off, update, set } from '../firebase'
+import { db, ref, onValue, update, set } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
-import { generateRoomCode } from '../utils/roomCode'
+import { generateUniqueRoomCode } from '../utils/roomCode'
 import { assignGroups } from '../utils/groups'
 import Navigation from '../components/Navigation'
 import RoomCode from '../components/RoomCode'
@@ -32,7 +32,7 @@ export default function TournamentLobby() {
         }
       }
     })
-    return () => off(tRef, 'value', unsub)
+    return () => unsub()
   }, [tournamentId, navigate])
 
   const isHost = tournament?.host === player.id
@@ -52,7 +52,7 @@ export default function TournamentLobby() {
     const roundData = { status: 'active', groups: {} }
 
     for (let i = 0; i < groups.length; i++) {
-      const gameCode = generateRoomCode()
+      const gameCode = await generateUniqueRoomCode()
       const gameData = {
         type: 'tournament',
         tournamentId,
@@ -139,6 +139,12 @@ export default function TournamentLobby() {
           <button className="btn btn-yellow btn-lg btn-block mt-24" onClick={generateGroups}>
             Generate Groups
           </button>
+        )}
+
+        {isHost && !showGroups && playerList.length < 2 && (
+          <p className="text-center text-sm text-gray mt-24">
+            Need at least 2 players to start. Share the room code!
+          </p>
         )}
 
         {isHost && showGroups && (

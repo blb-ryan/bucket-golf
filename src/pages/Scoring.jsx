@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
-import { db, ref, onValue, off, update, remove } from '../firebase'
+import { db, ref, onValue, update, remove } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
 import Navigation from '../components/Navigation'
 import ScoreInput from '../components/ScoreInput'
@@ -19,29 +19,31 @@ export default function Scoring() {
   const [showLeaderboard, setShowLeaderboard] = useState(false)
   const [showEndConfirm, setShowEndConfirm] = useState(false)
   const [bucketTrigger, setBucketTrigger] = useState(0)
-  const [isNegativeOne, setIsNegativeOne] = useState(false)
+  const [isBestScore, setIsBestScore] = useState(false)
 
   useEffect(() => {
     const gameRef = ref(db, `games/${gameId}`)
     const unsub = onValue(gameRef, snap => {
-      if (snap.exists()) {
-        const data = snap.val()
-        setGame(data)
-        if (data.status === 'cancelled') {
-          navigate('/', { replace: true })
-        }
-        if (data.status === 'finished') {
-          const tid = searchParams.get('tournament') || data.tournamentId
-          if (tid) {
-            navigate(`/tournament-round/${tid}`, { replace: true })
-          } else {
-            navigate(`/results/${gameId}`, { replace: true })
-          }
+      if (!snap.exists()) {
+        navigate('/', { replace: true })
+        return
+      }
+      const data = snap.val()
+      setGame(data)
+      if (data.status === 'cancelled') {
+        navigate('/', { replace: true })
+      }
+      if (data.status === 'finished') {
+        const tid = searchParams.get('tournament') || data.tournamentId
+        if (tid) {
+          navigate(`/tournament-round/${tid}`, { replace: true })
+        } else {
+          navigate(`/results/${gameId}`, { replace: true })
         }
       }
     })
-    return () => off(gameRef, 'value', unsub)
-  }, [gameId, navigate])
+    return () => unsub()
+  }, [gameId, navigate, searchParams])
 
   const isHost = game?.host === player.id
   const currentHole = game?.currentHole || 1
@@ -49,15 +51,19 @@ export default function Scoring() {
 
   const playerNames = useMemo(() => {
     const names = {}
-    Object.entries(game?.players || {}).forEach(([pid, p]) => { names[pid] = p.name })
+    if (game?.players) {
+      Object.entries(game.players).forEach(([pid, p]) => { names[pid] = p.name })
+    }
     return names
-  }, [game?.players])
+  }, [JSON.stringify(game?.players)])
 
   const playerEmojis = useMemo(() => {
     const emojis = {}
-    Object.entries(game?.players || {}).forEach(([pid, p]) => { emojis[pid] = p.emoji })
+    if (game?.players) {
+      Object.entries(game.players).forEach(([pid, p]) => { emojis[pid] = p.emoji })
+    }
     return emojis
-  }, [game?.players])
+  }, [JSON.stringify(game?.players)])
 
   const myScore = game?.scores?.[player.id]?.[String(currentHole)]
   const hasSubmitted = myScore?.score != null
@@ -69,18 +75,15 @@ export default function Scoring() {
     )
   }, [game?.players, game?.scores, currentHole])
 
-  async function handleSubmitScore({ hits, bucket, score }) {
+  const handleSubmitScore = useCallback(async ({ hits, bucket, score }) => {
     await update(ref(db, `games/${gameId}/scores/${player.id}/${currentHole}`), {
-      hits,
-      bucket,
-      score,
+      hits, bucket, score,
     })
-
     if (bucket) {
-      setIsNegativeOne(score === 0)
+      setIsBestScore(score === 0 && hits === 1)
       setBucketTrigger(t => t + 1)
     }
-  }
+  }, [gameId, player.id, currentHole])
 
   async function nextHole() {
     if (currentHole >= totalHoles) {
@@ -92,7 +95,14 @@ export default function Scoring() {
 
   async function endGame() {
     await update(ref(db, `games/${gameId}`), { status: 'cancelled' })
-    await remove(ref(db, `games/${gameId}`))
+    // Small delay so other clients pick up the cancelled status before removal
+    setTimeout(() => remove(ref(db, `games/${gameId}`)), 1000)
+    navigate('/', { replace: true })
+  }
+
+  async function leaveGame() {
+    const updates = { [`players/${player.id}`]: null }
+    await update(ref(db, `games/${gameId}`), updates)
     navigate('/', { replace: true })
   }
 
@@ -103,12 +113,12 @@ export default function Scoring() {
       <Navigation
         title={game.settings?.courseName || 'Game'}
         rightAction={
-          <button className="nav-back" onClick={() => setShowLeaderboard(!showLeaderboard)}>
+          <button className="nav-back" onClick={() => setShowLeaderboard(!showLeaderboard)} aria-label="Toggle leaderboard">
             📊
           </button>
         }
       />
-      <BucketAnimation trigger={bucketTrigger} isNegativeOne={isNegativeOne} />
+      <BucketAnimation trigger={bucketTrigger} isBestScore={isBestScore} />
 
       <div className="page">
         <HoleIndicator current={currentHole} total={totalHoles} />
@@ -170,9 +180,10 @@ export default function Scoring() {
           </div>
         )}
 
-        {isHost && (
-          <div className="mt-24">
-            {showEndConfirm ? (
+        {/* Host: End Game / Non-host: Leave Game */}
+        <div className="mt-24">
+          {isHost ? (
+            showEndConfirm ? (
               <div className="card text-center anim-fade-in" style={{ border: '2px solid var(--red)' }}>
                 <p className="fw-bold">End this game?</p>
                 <p className="text-sm text-gray mt-8">All scores will be erased and players sent home.</p>
@@ -185,9 +196,13 @@ export default function Scoring() {
               <button className="btn btn-outline btn-sm btn-block" style={{ color: 'var(--red)', borderColor: 'var(--red)' }} onClick={() => setShowEndConfirm(true)}>
                 End Game
               </button>
-            )}
-          </div>
-        )}
+            )
+          ) : (
+            <button className="btn btn-outline btn-sm btn-block" onClick={leaveGame}>
+              Leave Game
+            </button>
+          )}
+        </div>
       </div>
     </>
   )

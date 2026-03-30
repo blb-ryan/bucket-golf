@@ -133,7 +133,7 @@
 }
 
 .score-negative {
-  color: var(--green) !important;
+  color: var(--green);
 }
 
 .score-preview-fire {

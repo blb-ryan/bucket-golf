@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { db, ref, onValue, off, update } from '../firebase'
+import { db, ref, onValue, update, remove } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
 import Navigation from '../components/Navigation'
 import RoomCode from '../components/RoomCode'
@@ -16,15 +16,20 @@ export default function Lobby() {
   useEffect(() => {
     const gameRef = ref(db, `games/${gameId}`)
     const unsub = onValue(gameRef, snap => {
-      if (snap.exists()) {
-        const data = snap.val()
-        setGame(data)
-        if (data.status === 'active') {
-          navigate(`/scoring/${gameId}`, { replace: true })
-        }
+      if (!snap.exists()) {
+        navigate('/', { replace: true })
+        return
+      }
+      const data = snap.val()
+      setGame(data)
+      if (data.status === 'active') {
+        navigate(`/scoring/${gameId}`, { replace: true })
+      }
+      if (data.status === 'cancelled') {
+        navigate('/', { replace: true })
       }
     })
-    return () => off(gameRef, 'value', unsub)
+    return () => unsub()
   }, [gameId, navigate])
 
   async function startGame() {
@@ -32,15 +37,17 @@ export default function Lobby() {
   }
 
   async function leaveGame() {
-    if (game?.host === player.id) {
-      // Transfer host
-      const playerIds = Object.keys(game.players || {}).filter(id => id !== player.id)
-      if (playerIds.length > 0) {
-        await update(ref(db, `games/${gameId}`), { host: playerIds[0] })
+    const playerIds = Object.keys(game?.players || {}).filter(id => id !== player.id)
+    if (playerIds.length === 0) {
+      // Last player leaving — delete the game
+      await remove(ref(db, `games/${gameId}`))
+    } else {
+      const updates = { [`players/${player.id}`]: null }
+      if (game?.host === player.id) {
+        updates.host = playerIds[0]
       }
+      await update(ref(db, `games/${gameId}`), updates)
     }
-    const { [player.id]: _, ...remaining } = game?.players || {}
-    await update(ref(db, `games/${gameId}`), { players: remaining })
     navigate('/')
   }
 
@@ -57,7 +64,7 @@ export default function Lobby() {
 
         <div className="lobby-info mt-16 text-center">
           <span className="text-sm text-gray">{game.settings?.holes} holes</span>
-          {game.type === 'quickPlay' && <span className="lobby-badge-quick">⚡ Quick Play</span>}
+          {game.type === 'quickPlay' && <span className="lobby-badge-quick">Quick Play</span>}
         </div>
 
         <h3 className="mt-20 mb-12 fw-bold">Players ({playerList.length})</h3>

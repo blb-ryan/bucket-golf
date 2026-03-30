@@ -6,11 +6,19 @@ export default function Navigation({ title, showBack = false, rightAction }) {
   const location = useLocation()
   const isHome = location.pathname === '/' || location.pathname === '/bucket-golf/'
 
+  function handleBack() {
+    if (window.history.length > 1) {
+      navigate(-1)
+    } else {
+      navigate('/')
+    }
+  }
+
   return (
     <header className="nav-header">
       <div className="nav-inner">
         {showBack && !isHome ? (
-          <button className="nav-back" onClick={() => navigate(-1)}>
+          <button className="nav-back" onClick={handleBack} aria-label="Go back">
             <span>&#8592;</span>
           </button>
         ) : (

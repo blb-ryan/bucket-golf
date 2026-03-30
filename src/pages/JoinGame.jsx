@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { db, ref, get, update } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
+import { VALID_CHARS } from '../utils/roomCode'
 import Navigation from '../components/Navigation'
 import './JoinGame.css'
 
@@ -76,7 +77,7 @@ export default function JoinGame() {
           <input
             className="join-code-input"
             value={code}
-            onChange={e => setCode(e.target.value.toUpperCase().slice(0, 4))}
+            onChange={e => setCode(e.target.value.toUpperCase().split('').filter(c => VALID_CHARS.has(c)).join('').slice(0, 4))}
             placeholder="ABCD"
             maxLength={4}
             autoFocus

@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { db, ref, get, update } from '../firebase'
+import { db, ref, get } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
 import { calculateTotalScore, calculateBucketCount } from '../utils/scoring'
 import { updatePlayerStats } from '../utils/stats'
@@ -13,15 +13,16 @@ export default function GameResults() {
   const { player, updateStats, addGameToHistory } = usePlayer()
   const navigate = useNavigate()
   const [game, setGame] = useState(null)
-  const [statsWritten, setStatsWritten] = useState(false)
+  const statsWrittenRef = useRef(false)
 
   useEffect(() => {
     async function load() {
       const snap = await get(ref(db, `games/${gameId}`))
       if (snap.exists()) setGame(snap.val())
+      else navigate('/', { replace: true })
     }
     load()
-  }, [gameId])
+  }, [gameId, navigate])
 
   const rankings = useMemo(() => {
     if (!game) return []
@@ -38,13 +39,21 @@ export default function GameResults() {
   }, [game])
 
   useEffect(() => {
-    if (!rankings.length || statsWritten || !player) return
-    setStatsWritten(true)
+    if (!rankings.length || statsWrittenRef.current || !player) return
+
+    // Check if this game is already in history
+    const alreadyRecorded = (player.gameHistory || []).some(h => h.gameId === gameId)
+    if (alreadyRecorded) {
+      statsWrittenRef.current = true
+      return
+    }
+
+    statsWrittenRef.current = true
 
     const me = rankings.find(r => r.playerId === player.id)
     if (!me) return
 
-    celebrateWinner()
+    const cancel = celebrateWinner()
 
     const isWinner = me.rank === 1
     const newStats = updatePlayerStats(player.stats || {}, {
@@ -61,7 +70,9 @@ export default function GameResults() {
       result: isWinner ? 'win' : 'loss',
       score: me.total,
     })
-  }, [rankings, statsWritten, player])
+
+    return () => cancel?.()
+  }, [rankings, player, gameId])
 
   if (!game) return <div className="page flex-center"><div className="anim-spin" style={{ fontSize: '2rem' }}>🪣</div></div>
 
@@ -110,7 +121,7 @@ export default function GameResults() {
         </div>
 
         <div className="results-meta mt-20 text-center text-sm text-gray">
-          {game.settings?.courseName || 'Quick Round'} • {totalHoles} holes
+          {game.settings?.courseName || 'Quick Round'} &bull; {totalHoles} holes
         </div>
 
         <button className="btn btn-red btn-lg btn-block mt-24" onClick={() => navigate('/')}>

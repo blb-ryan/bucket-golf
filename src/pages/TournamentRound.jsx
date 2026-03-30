@@ -1,9 +1,9 @@
 import { useEffect, useState, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { db, ref, onValue, off, update, set } from '../firebase'
+import { db, ref, onValue, update, set } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
 import { calculateTotalScore, calculateBucketCount } from '../utils/scoring'
-import { generateRoomCode } from '../utils/roomCode'
+import { generateUniqueRoomCode } from '../utils/roomCode'
 import { assignGroups } from '../utils/groups'
 import Navigation from '../components/Navigation'
 import './TournamentRound.css'
@@ -28,29 +28,35 @@ export default function TournamentRound() {
         }
       }
     })
-    return () => off(tRef, 'value', unsub)
+    return () => unsub()
   }, [tournamentId, navigate])
 
-  // Listen to ALL group games across all rounds
-  useEffect(() => {
-    if (!tournament?.rounds) return
-    const listeners = []
-
+  // Collect all game IDs from tournament rounds (stable string key)
+  const allGameIds = useMemo(() => {
+    if (!tournament?.rounds) return ''
+    const ids = []
     for (const [, round] of Object.entries(tournament.rounds)) {
       if (!round.groups) continue
       for (const [, group] of Object.entries(round.groups)) {
-        const gameRef = ref(db, `games/${group.gameId}`)
-        const unsub = onValue(gameRef, snap => {
-          if (snap.exists()) {
-            setAllGamesData(prev => ({ ...prev, [group.gameId]: snap.val() }))
-          }
-        })
-        listeners.push({ ref: gameRef, unsub })
+        if (group.gameId) ids.push(group.gameId)
       }
     }
+    return ids.sort().join(',')
+  }, [JSON.stringify(tournament?.rounds)])
 
-    return () => listeners.forEach(l => off(l.ref, 'value', l.unsub))
-  }, [tournament?.rounds])
+  // Listen to ALL group games across all rounds
+  useEffect(() => {
+    if (!allGameIds) return
+    const ids = allGameIds.split(',')
+    const unsubs = ids.map(gameId => {
+      return onValue(ref(db, `games/${gameId}`), snap => {
+        if (snap.exists()) {
+          setAllGamesData(prev => ({ ...prev, [gameId]: snap.val() }))
+        }
+      })
+    })
+    return () => unsubs.forEach(u => u())
+  }, [allGameIds])
 
   const isHost = tournament?.host === player.id
   const currentRound = getCurrentRound(tournament?.status)
@@ -141,7 +147,7 @@ export default function TournamentRound() {
     const roundData = { status: 'active', groups: {} }
 
     for (let i = 0; i < nextGroups.length; i++) {
-      const gameCode = generateRoomCode()
+      const gameCode = await generateUniqueRoomCode()
       const gameData = {
         type: 'tournament',
         tournamentId,

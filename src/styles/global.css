@@ -1,5 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
-
 :root {
   --red: #E53935;
   --red-dark: #C62828;
@@ -54,6 +52,11 @@ button {
   border: none;
   outline: none;
   -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible {
+  outline: 3px solid var(--red);
+  outline-offset: 2px;
 }
 
 input {
@@ -136,6 +139,13 @@ input {
   width: 100%;
 }
 
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .card {
   background: var(--white);
   border-radius: var(--radius);
@@ -199,12 +209,26 @@ input {
 
 .grass-bg {
   background-image:
-    radial-gradient(circle at 20% 80%, rgba(67, 160, 71, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(67, 160, 71, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 50% 50%, rgba(255, 214, 0, 0.02) 0%, transparent 70%);
+    radial-gradient(circle at 20% 80%, rgba(67, 160, 71, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(67, 160, 71, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(255, 214, 0, 0.05) 0%, transparent 70%);
 }
 
-.dots-bg {
-  background-image: radial-gradient(circle, var(--gray-light) 1px, transparent 1px);
-  background-size: 20px 20px;
+.anim-spin {
+  animation: spin 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .page { padding: 12px; }
+  .btn-lg { padding: 14px 20px; font-size: 1.1rem; }
+  .counter-btn { width: 52px; height: 52px; }
+  .counter-value { font-size: 2rem; min-width: 60px; }
 }

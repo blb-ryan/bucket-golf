@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { db, ref, get } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
@@ -14,7 +14,7 @@ export default function TournamentResults() {
   const navigate = useNavigate()
   const [tournament, setTournament] = useState(null)
   const [gamesData, setGamesData] = useState({})
-  const [statsWritten, setStatsWritten] = useState(false)
+  const statsWrittenRef = useRef(false)
 
   useEffect(() => {
     async function load() {
@@ -78,13 +78,17 @@ export default function TournamentResults() {
   }, [tournament, gamesData])
 
   useEffect(() => {
-    if (!leaderboard.length || statsWritten || !player) return
-    setStatsWritten(true)
+    if (!leaderboard.length || statsWrittenRef.current || !player) return
+
+    const alreadyRecorded = (player.gameHistory || []).some(h => h.gameId === tournamentId)
+    if (alreadyRecorded) { statsWrittenRef.current = true; return }
+
+    statsWrittenRef.current = true
 
     const me = leaderboard.find(r => r.playerId === player.id)
     if (!me) return
 
-    celebrateChampion()
+    const cancel = celebrateChampion()
 
     const isWinner = me.rank === 1
     const newStats = updatePlayerStats(player.stats || {}, {
@@ -101,7 +105,9 @@ export default function TournamentResults() {
       score: me.total,
       placement: me.rank,
     })
-  }, [leaderboard, statsWritten, player])
+
+    return () => cancel?.()
+  }, [leaderboard, player, tournamentId])
 
   if (!tournament) return <div className="page flex-center"><div className="anim-spin" style={{ fontSize: '2rem' }}>🏆</div></div>
 

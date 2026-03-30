@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { db, ref, set, update } from '../firebase'
+import { db, ref, set } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
-import { generateRoomCode } from '../utils/roomCode'
+import { generateUniqueRoomCode } from '../utils/roomCode'
 import Navigation from '../components/Navigation'
 import './TournamentSetup.css'
 
@@ -14,10 +14,12 @@ export default function TournamentSetup() {
   const [courseName, setCourseName] = useState('')
   const [advancement, setAdvancement] = useState('auto')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
   async function handleCreate() {
     setLoading(true)
-    const code = generateRoomCode()
+    setError('')
+    const code = await generateUniqueRoomCode()
     const data = {
       host: player.id,
       status: 'lobby',
@@ -40,7 +42,7 @@ export default function TournamentSetup() {
       await set(ref(db, `tournaments/${code}`), data)
       navigate(`/tournament-lobby/${code}`)
     } catch {
-      alert('Failed to create tournament. Try again.')
+      setError('Failed to create tournament. Try again.')
     }
     setLoading(false)
   }
@@ -93,6 +95,8 @@ export default function TournamentSetup() {
           <label className="setup-label">Course Name (optional)</label>
           <input className="input" value={courseName} onChange={e => setCourseName(e.target.value)} placeholder="Championship Course" maxLength={30} />
         </div>
+
+        {error && <p className="text-red text-sm text-center">{error}</p>}
 
         <button className="btn btn-yellow btn-lg btn-block mt-16" onClick={handleCreate} disabled={loading}>
           {loading ? 'Creating...' : '🏆 Create Tournament'}
