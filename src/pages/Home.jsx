@@ -1,8 +1,9 @@
 import { useNavigate } from 'react-router-dom'
 import { usePlayer } from '../contexts/PlayerContext'
 import Navigation from '../components/Navigation'
-import { version } from '../../package.json'
 import './Home.css'
+
+const VERSION = 'Mar 30 06:42';
 
 export default function Home() {
   const { player } = usePlayer()
@@ -68,7 +69,7 @@ export default function Home() {
           </div>
         )}
 
-        <div className="home-version">v{version}</div>
+        <div className="home-version">{VERSION}</div>
       </div>
     </>
   )
