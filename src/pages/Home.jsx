@@ -3,7 +3,7 @@ import { usePlayer } from '../contexts/PlayerContext'
 import Navigation from '../components/Navigation'
 import './Home.css'
 
-const VERSION = 'Mar 30 06:42';
+const VERSION = 'Mar 30 06:48';
 
 export default function Home() {
   const { player } = usePlayer()
@@ -13,6 +13,8 @@ export default function Home() {
     <>
       <Navigation title="Bucket Golf" />
       <div className="page grass-bg">
+        <div className="home-version-banner">Build: {VERSION}</div>
+
         <div className="home-hero anim-fade-in">
           <div className="home-bucket">🪣</div>
           <h2 className="home-greeting">Hey, {player?.name || 'Golfer'}!</h2>
@@ -68,8 +70,6 @@ export default function Home() {
             </div>
           </div>
         )}
-
-        <div className="home-version">{VERSION}</div>
       </div>
     </>
   )

@@ -67,11 +67,14 @@
   margin-top: 2px;
 }
 
-.home-version {
+.home-version-banner {
   text-align: center;
-  margin-top: 24px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: var(--gray-light);
-  letter-spacing: 0.5px;
+  padding: 8px 16px;
+  margin-bottom: 8px;
+  background: var(--dark);
+  color: var(--yellow);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 1px;
 }
