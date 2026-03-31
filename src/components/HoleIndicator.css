@@ -23,11 +23,26 @@
   color: var(--white);
 }
 
+.hole-tappable {
+  cursor: pointer;
+}
+
+.hole-tappable:active {
+  transform: scale(0.9);
+}
+
 .hole-current {
   background: var(--red);
   color: var(--white);
   transform: scale(1.2);
   box-shadow: 0 2px 8px rgba(229, 57, 53, 0.4);
+}
+
+.hole-viewing {
+  background: var(--orange);
+  color: var(--white);
+  transform: scale(1.2);
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.4);
 }
 
 .hole-future {

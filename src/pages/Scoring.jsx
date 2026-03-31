@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react'
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { db, ref, onValue, update, remove, set, get } from '../firebase'
 import { usePlayer } from '../contexts/PlayerContext'
@@ -18,10 +18,13 @@ export default function Scoring() {
   const [game, setGame] = useState(null)
   const tournamentId = searchParams.get('tournament') || game?.tournamentId
   const [showLeaderboard, setShowLeaderboard] = useState(false)
-  const [lbTab, setLbTab] = useState('group') // 'group' or 'tournament'
+  const [lbTab, setLbTab] = useState('group')
   const [showEndConfirm, setShowEndConfirm] = useState(false)
   const [bucketTrigger, setBucketTrigger] = useState(0)
   const [isBestScore, setIsBestScore] = useState(false)
+  const [viewingHole, setViewingHole] = useState(null)
+  const [autoAdvanceCountdown, setAutoAdvanceCountdown] = useState(null)
+  const autoAdvanceTimer = useRef(null)
 
   // Tournament leaderboard state
   const [tournamentData, setTournamentData] = useState(null)
@@ -60,7 +63,7 @@ export default function Scoring() {
     return () => unsub()
   }, [gameId, navigate, searchParams])
 
-  // Listen to tournament data if this is a tournament game
+  // Listen to tournament data
   useEffect(() => {
     if (!tournamentId) return
     const tRef = ref(db, `tournaments/${tournamentId}`)
@@ -70,7 +73,7 @@ export default function Scoring() {
     return () => unsub()
   }, [tournamentId])
 
-  // Listen to all tournament group games for the leaderboard
+  // Listen to all tournament group games
   const tournamentGameIds = useMemo(() => {
     if (!tournamentData?.rounds) return ''
     const ids = []
@@ -96,12 +99,10 @@ export default function Scoring() {
     return () => unsubs.forEach(u => u())
   }, [tournamentGameIds])
 
-  // Compute tournament-wide leaderboard
   const tournamentLeaderboard = useMemo(() => {
     if (!tournamentData?.rounds) return []
     const totals = {}
     const playerInfo = tournamentData.playerInfo || {}
-
     for (const [, round] of Object.entries(tournamentData.rounds)) {
       if (!round.groups) continue
       for (const [, group] of Object.entries(round.groups)) {
@@ -114,7 +115,6 @@ export default function Scoring() {
         }
       }
     }
-
     return Object.entries(totals)
       .map(([pid, data]) => ({
         playerId: pid,
@@ -129,8 +129,16 @@ export default function Scoring() {
   const isHost = game?.host === player.id
   const currentHole = game?.currentHole || 1
   const totalHoles = game?.settings?.holes || 9
-  const hostName = game?.players?.[game?.host]?.name || 'host'
   const isTournament = !!tournamentId
+
+  // The hole the player is currently looking at (may differ from game's currentHole)
+  const activeHole = viewingHole || currentHole
+  const isViewingPast = viewingHole != null && viewingHole !== currentHole
+
+  // Clear viewingHole when the game advances
+  useEffect(() => {
+    setViewingHole(null)
+  }, [currentHole])
 
   const { playerNames, playerEmojis } = useMemo(() => {
     const names = {}
@@ -144,8 +152,8 @@ export default function Scoring() {
     return { playerNames: names, playerEmojis: emojis }
   }, [game?.players])
 
-  const myScore = game?.scores?.[player.id]?.[String(currentHole)]
-  const hasSubmitted = myScore?.score != null
+  const myActiveScore = game?.scores?.[player.id]?.[String(activeHole)]
+  const hasSubmittedActive = myActiveScore?.score != null
 
   const allSubmitted = useMemo(() => {
     if (!game?.players) return false
@@ -161,26 +169,67 @@ export default function Scoring() {
       .map(pid => game.players[pid]?.name || 'Player')
   }, [game?.players, game?.scores, currentHole])
 
+  // Auto-advance when all players submit
+  useEffect(() => {
+    if (allSubmitted && !isViewingPast) {
+      setAutoAdvanceCountdown(2)
+      const interval = setInterval(() => {
+        setAutoAdvanceCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(interval)
+            nextHoleRef.current()
+            return null
+          }
+          return prev - 1
+        })
+      }, 1000)
+      autoAdvanceTimer.current = interval
+      return () => clearInterval(interval)
+    } else {
+      // Cancel countdown if someone undoes
+      if (autoAdvanceTimer.current) {
+        clearInterval(autoAdvanceTimer.current)
+        autoAdvanceTimer.current = null
+      }
+      setAutoAdvanceCountdown(null)
+    }
+  }, [allSubmitted, isViewingPast])
+
+  // Ref to avoid stale closure in the interval
+  const nextHoleRef = useRef(null)
+  nextHoleRef.current = async () => {
+    if (currentHole >= totalHoles) {
+      await update(ref(db, `games/${gameId}`), { status: 'finished' })
+    } else {
+      await update(ref(db, `games/${gameId}`), { currentHole: currentHole + 1 })
+    }
+  }
+
   const handleSubmitScore = useCallback(async ({ hits, bucket, score }) => {
-    await update(ref(db, `games/${gameId}/scores/${player.id}/${currentHole}`), {
+    await update(ref(db, `games/${gameId}/scores/${player.id}/${activeHole}`), {
       hits, bucket, score,
     })
     if (bucket) {
       setIsBestScore(score === 0 && hits === 1)
       setBucketTrigger(t => t + 1)
     }
-  }, [gameId, player.id, currentHole])
+    // If editing a past hole, go back to current after saving
+    if (isViewingPast) {
+      setViewingHole(null)
+    }
+  }, [gameId, player.id, activeHole, isViewingPast])
 
   const handleUndoScore = useCallback(async () => {
-    await set(ref(db, `games/${gameId}/scores/${player.id}/${currentHole}`), null)
-  }, [gameId, player.id, currentHole])
+    await set(ref(db, `games/${gameId}/scores/${player.id}/${activeHole}`), null)
+  }, [gameId, player.id, activeHole])
 
-  async function nextHole() {
-    if (currentHole >= totalHoles) {
-      await update(ref(db, `games/${gameId}`), { status: 'finished' })
+  function handleHoleTap(hole) {
+    if (hole === currentHole) {
+      setViewingHole(null)
     } else {
-      await update(ref(db, `games/${gameId}`), { currentHole: currentHole + 1 })
+      setViewingHole(hole)
     }
+    setShowLeaderboard(false)
   }
 
   async function endGame() {
@@ -192,14 +241,12 @@ export default function Scoring() {
   async function leaveGame() {
     const remainingPlayers = Object.keys(game?.players || {}).filter(id => id !== player.id)
     if (remainingPlayers.length === 0) {
-      // Last player — delete the game
       await remove(ref(db, `games/${gameId}`))
     } else {
       const updates = {
         [`players/${player.id}`]: null,
         [`scores/${player.id}`]: null,
       }
-      // Transfer host if needed
       if (game?.host === player.id) {
         updates.host = remainingPlayers[0]
       }
@@ -223,7 +270,21 @@ export default function Scoring() {
       <BucketAnimation trigger={bucketTrigger} isBestScore={isBestScore} />
 
       <div className="page">
-        <HoleIndicator current={currentHole} total={totalHoles} />
+        <HoleIndicator
+          current={currentHole}
+          total={totalHoles}
+          viewing={viewingHole}
+          onHoleTap={handleHoleTap}
+        />
+
+        {/* Viewing a past hole — show back button */}
+        {isViewingPast && (
+          <div className="text-center mt-8 mb-8">
+            <button className="btn btn-sm btn-outline" onClick={() => setViewingHole(null)}>
+              ← Back to Hole {currentHole}
+            </button>
+          </div>
+        )}
 
         {showLeaderboard ? (
           <div className="mt-16 anim-fade-in">
@@ -234,7 +295,6 @@ export default function Scoring() {
               </button>
             </div>
 
-            {/* Tournament: show tabs for Group vs Tournament */}
             {isTournament && (
               <div className="lb-tabs mb-12">
                 <button className={`lb-tab ${lbTab === 'group' ? 'lb-tab-active' : ''}`} onClick={() => setLbTab('group')}>
@@ -290,16 +350,17 @@ export default function Scoring() {
         ) : (
           <div className="mt-16">
             <ScoreInput
-              key={currentHole}
-              hole={currentHole}
+              key={activeHole}
+              hole={activeHole}
               onSubmit={handleSubmitScore}
               onUndo={handleUndoScore}
-              disabled={hasSubmitted}
-              canUndo={hasSubmitted}
-              savedScore={myScore}
+              disabled={hasSubmittedActive}
+              canUndo={hasSubmittedActive}
+              savedScore={myActiveScore}
             />
 
-            {hasSubmitted && (
+            {/* Current hole: show waiting/auto-advance status */}
+            {!isViewingPast && hasSubmittedActive && (
               <div className="scoring-waiting mt-20 anim-fade-in">
                 <Leaderboard
                   players={game.players}
@@ -310,14 +371,9 @@ export default function Scoring() {
                   currentPlayerId={player.id}
                 />
 
-                {allSubmitted && isHost && (
-                  <button className="btn btn-red btn-lg btn-block mt-16 anim-pop-in" onClick={nextHole}>
-                    {currentHole >= totalHoles ? '🏁 Finish Game' : `➡️ Hole ${currentHole + 1}`}
-                  </button>
-                )}
-                {allSubmitted && !isHost && (
-                  <p className="text-center text-sm text-gray mt-12">
-                    Waiting for {hostName} to advance...
+                {allSubmitted && autoAdvanceCountdown != null && (
+                  <p className="text-center text-sm fw-bold mt-12" style={{ color: 'var(--green)' }}>
+                    {currentHole >= totalHoles ? '🏁 Finishing game...' : `➡️ Advancing to Hole ${currentHole + 1}...`}
                   </p>
                 )}
                 {!allSubmitted && waitingNames.length > 0 && (
