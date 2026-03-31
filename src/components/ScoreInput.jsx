@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { calculateHoleScore, formatScore } from '../utils/scoring'
+import { calculateHoleScore, displayHoleScore, formatScore } from '../utils/scoring'
 import './ScoreInput.css'
 
-export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo, savedScore }) {
+export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo, savedScore, scoringMode = 'total' }) {
   const [hits, setHits] = useState(savedScore?.hits || 1)
   const [bucket, setBucket] = useState(savedScore?.bucket || false)
   const [submitted, setSubmitted] = useState(disabled)
@@ -12,6 +12,7 @@ export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo, 
   const [showHelp, setShowHelp] = useState(() => !localStorage.getItem('bucketgolf_help_seen'))
 
   const score = calculateHoleScore(hits, bucket)
+  const displayScore = displayHoleScore(score, scoringMode)
 
   function handleBucketToggle() {
     const newBucket = !bucket
@@ -50,8 +51,8 @@ export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo, 
     return (
       <div className="score-input-submitted anim-scale-in">
         <div className="score-submitted-label">Hole {hole} Score</div>
-        <div className={`score-submitted-value ${score <= 0 ? 'score-negative' : ''}`}>
-          {formatScore(score)}
+        <div className={`score-submitted-value ${displayScore < 0 ? 'score-negative' : ''}`}>
+          {formatScore(displayScore)}
         </div>
         {bucket && <div className="score-submitted-bucket">🪣 BUCKET!</div>}
         {canUndo && (
@@ -75,12 +76,21 @@ export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo, 
           <p className="score-help-title">How Scoring Works</p>
           <p className="score-help-text">Count your swings (hits) to get the ball in or near the bucket.</p>
           <p className="score-help-text">If it goes <strong>IN the bucket</strong>, you get <strong>-1</strong> off your score!</p>
-          <div className="score-help-examples">
-            <span>3 hits + bucket = <strong>2</strong></span>
-            <span>3 hits, no bucket = <strong>3</strong></span>
-            <span>1 hit + bucket = <strong>E</strong> 🔥</span>
-          </div>
-          <p className="score-help-text mt-8">Lowest total score wins!</p>
+          {scoringMode === 'golf' ? (
+            <div className="score-help-examples">
+              <span>Every hole is <strong>Par 3</strong></span>
+              <span>3 hits, no bucket = <strong>E</strong> (par)</span>
+              <span>2 hits, no bucket = <strong>-1</strong> (birdie)</span>
+              <span>2 hits + bucket = <strong>-2</strong></span>
+            </div>
+          ) : (
+            <div className="score-help-examples">
+              <span>3 hits + bucket = <strong>2</strong></span>
+              <span>3 hits, no bucket = <strong>3</strong></span>
+              <span>1 hit + bucket = <strong>E</strong> 🔥</span>
+            </div>
+          )}
+          <p className="score-help-text mt-8">Lowest score wins!</p>
           <button className="btn btn-sm btn-red mt-8" onClick={dismissHelp}>
             Got it!
           </button>
@@ -121,8 +131,8 @@ export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo, 
 
       <div className="score-input-preview">
         <div className="score-preview-label">Hole Score</div>
-        <div className={`score-preview-value ${score <= 0 ? 'score-negative' : ''}`}>
-          {formatScore(score)}
+        <div className={`score-preview-value ${displayScore < 0 ? 'score-negative' : ''}`}>
+          {formatScore(displayScore)}
         </div>
         {hits === 1 && bucket && <div className="score-preview-fire">🔥 INCREDIBLE!</div>}
       </div>

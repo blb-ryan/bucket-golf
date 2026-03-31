@@ -62,6 +62,7 @@ export default function TournamentRound() {
   const currentRound = getCurrentRound(tournament?.status)
   const isBetweenRounds = tournament?.status === 'between_rounds'
   const totalRounds = tournament?.settings?.rounds || 1
+  const scoringMode = tournament?.settings?.scoringMode || 'total'
 
   // Find my game in the current round
   const myGameId = useMemo(() => {
@@ -107,7 +108,7 @@ export default function TournamentRound() {
         if (!game) continue
         for (const pid of group.players || []) {
           if (!totals[pid]) totals[pid] = { total: 0, buckets: 0, rounds: {} }
-          const roundScore = calculateTotalScore(game.scores?.[pid])
+          const roundScore = calculateTotalScore(game.scores?.[pid], scoringMode)
           const roundBuckets = calculateBucketCount(game.scores?.[pid])
           totals[pid].total += roundScore
           totals[pid].buckets += roundBuckets
@@ -156,6 +157,7 @@ export default function TournamentRound() {
         status: 'active',
         settings: {
           holes: 9,
+          scoringMode: tournament.settings?.scoringMode || 'total',
           courseName: `Round ${nextRoundNum} - Group ${i + 1}`,
         },
         currentHole: 1,

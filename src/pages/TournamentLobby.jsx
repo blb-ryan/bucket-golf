@@ -79,7 +79,7 @@ export default function TournamentLobby() {
           groupNumber: i + 1,
           host: group[0],
           status: 'active',
-          settings: { holes: 9 },
+          settings: { holes: 9, scoringMode: tournament.settings?.scoringMode || 'total' },
           currentHole: 1,
           players: {},
           scores: {},

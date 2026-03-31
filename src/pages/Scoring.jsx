@@ -110,7 +110,7 @@ export default function Scoring() {
         if (!g) continue
         for (const pid of group.players || []) {
           if (!totals[pid]) totals[pid] = { total: 0, buckets: 0 }
-          totals[pid].total += calculateTotalScore(g.scores?.[pid])
+          totals[pid].total += calculateTotalScore(g.scores?.[pid], scoringMode)
           totals[pid].buckets += calculateBucketCount(g.scores?.[pid])
         }
       }
@@ -129,6 +129,7 @@ export default function Scoring() {
   const isHost = game?.host === player.id
   const currentHole = game?.currentHole || 1
   const totalHoles = game?.settings?.holes || 9
+  const scoringMode = game?.settings?.scoringMode || 'total'
   const isTournament = !!tournamentId
 
   // The hole the player is currently looking at (may differ from game's currentHole)
@@ -314,6 +315,7 @@ export default function Scoring() {
                 playerNames={playerNames}
                 playerEmojis={playerEmojis}
                 currentPlayerId={player.id}
+                scoringMode={scoringMode}
               />
             ) : (
               <div className="tournament-lb">
@@ -357,6 +359,7 @@ export default function Scoring() {
               disabled={hasSubmittedActive}
               canUndo={hasSubmittedActive}
               savedScore={myActiveScore}
+              scoringMode={scoringMode}
             />
 
             {/* Current hole: show waiting/auto-advance status */}

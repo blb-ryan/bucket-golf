@@ -11,6 +11,7 @@ export default function GameSetup() {
   const { player } = usePlayer()
   const navigate = useNavigate()
   const [holes, setHoles] = useState(9)
+  const [scoringMode, setScoringMode] = useState('total')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -19,7 +20,7 @@ export default function GameSetup() {
     setError('')
     try {
       const code = await generateUniqueRoomCode()
-      await set(ref(db, `games/${code}`), createGameData(player, { type: 'casual', holes }))
+      await set(ref(db, `games/${code}`), createGameData(player, { type: 'casual', holes, scoringMode }))
       navigate(`/lobby/${code}`)
     } catch {
       setError('Failed to create game. Try again.')
@@ -33,6 +34,23 @@ export default function GameSetup() {
       <div className="page">
         <div className="setup-form anim-fade-in-up">
           <h2 className="page-title">Game Settings</h2>
+
+          <div className="setup-field">
+            <label className="setup-label">Scoring Method</label>
+            <div className="mode-picker">
+              <button className={`mode-option ${scoringMode === 'total' ? 'mode-active' : ''}`} onClick={() => setScoringMode('total')}>
+                <span className="mode-icon">🎯</span>
+                <span className="mode-name">Total Points</span>
+              </button>
+              <button className={`mode-option ${scoringMode === 'golf' ? 'mode-active' : ''}`} onClick={() => setScoringMode('golf')}>
+                <span className="mode-icon">⛳</span>
+                <span className="mode-name">Traditional Golf</span>
+              </button>
+            </div>
+            <p className="text-center text-sm text-gray mt-8">
+              {scoringMode === 'total' ? 'Lowest total hits wins' : 'Par 3 per hole — score relative to par'}
+            </p>
+          </div>
 
           <div className="setup-field">
             <label className="setup-label">Number of Holes</label>

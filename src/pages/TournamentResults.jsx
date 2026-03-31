@@ -40,6 +40,8 @@ export default function TournamentResults() {
     load()
   }, [tournamentId])
 
+  const scoringMode = tournament?.settings?.scoringMode || 'total'
+
   const leaderboard = useMemo(() => {
     if (!tournament) return []
     const totals = {}
@@ -51,7 +53,7 @@ export default function TournamentResults() {
         if (!game) continue
         for (const pid of group.players || []) {
           if (!totals[pid]) totals[pid] = { total: 0, buckets: 0, rounds: {}, bestRound: Infinity, bestHole: Infinity }
-          const roundScore = calculateTotalScore(game.scores?.[pid])
+          const roundScore = calculateTotalScore(game.scores?.[pid], scoringMode)
           const roundBuckets = calculateBucketCount(game.scores?.[pid])
           totals[pid].total += roundScore
           totals[pid].buckets += roundBuckets
@@ -107,6 +109,7 @@ export default function TournamentResults() {
       type: 'tournament',
       result: isWinner ? 'win' : 'loss',
       score: me.total,
+      scoringMode,
       placement: me.rank,
     })
 

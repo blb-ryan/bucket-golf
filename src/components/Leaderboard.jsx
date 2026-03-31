@@ -2,21 +2,21 @@ import { useMemo } from 'react'
 import { calculateTotalScore, calculateBucketCount, formatScore } from '../utils/scoring'
 import './Leaderboard.css'
 
-export default function Leaderboard({ players, scores, currentHole, playerNames, playerEmojis, currentPlayerId }) {
+export default function Leaderboard({ players, scores, currentHole, playerNames, playerEmojis, currentPlayerId, scoringMode = 'total' }) {
   const rankings = useMemo(() => {
     return Object.keys(players || {})
       .map(pid => ({
         playerId: pid,
         name: playerNames?.[pid] || 'Player',
         emoji: playerEmojis?.[pid] || '🔴',
-        total: calculateTotalScore(scores?.[pid]),
+        total: calculateTotalScore(scores?.[pid], scoringMode),
         buckets: calculateBucketCount(scores?.[pid]),
         hasSubmitted: scores?.[pid]?.[String(currentHole)]?.score != null,
         isMe: pid === currentPlayerId,
       }))
       .sort((a, b) => a.total - b.total)
       .map((entry, i) => ({ ...entry, rank: i + 1 }))
-  }, [players, scores, currentHole, playerNames, playerEmojis, currentPlayerId])
+  }, [players, scores, currentHole, playerNames, playerEmojis, currentPlayerId, scoringMode])
 
   return (
     <div className="leaderboard">
@@ -41,7 +41,7 @@ export default function Leaderboard({ players, scores, currentHole, playerNames,
             {r.hasSubmitted && <span className="lb-check">✓</span>}
           </span>
           <span className="lb-buckets">🪣 {r.buckets}</span>
-          <span className={`lb-total ${r.total <= 0 ? 'score-negative' : ''}`}>
+          <span className={`lb-total ${r.total < 0 ? 'score-negative' : ''}`}>
             {formatScore(r.total)}
           </span>
         </div>

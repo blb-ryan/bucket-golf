@@ -11,6 +11,7 @@ export default function TournamentSetup() {
   const navigate = useNavigate()
   const [rounds, setRounds] = useState(2)
   const [groupSize, setGroupSize] = useState(2)
+  const [scoringMode, setScoringMode] = useState('total')
   const [advancement, setAdvancement] = useState('auto')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -26,6 +27,7 @@ export default function TournamentSetup() {
       settings: {
         rounds,
         groupSize,
+        scoringMode,
         advancement,
       },
       playerInfo: {
@@ -49,6 +51,21 @@ export default function TournamentSetup() {
       <Navigation title="Tournament" showBack />
       <div className="page">
         <h2 className="page-title">🏆 Tournament Settings</h2>
+
+        <div className="setup-field">
+          <label className="setup-label">Scoring Method</label>
+          <div className="option-row">
+            <button className={`option-btn option-wide ${scoringMode === 'total' ? 'option-active' : ''}`} onClick={() => setScoringMode('total')}>
+              🎯 Total Points
+            </button>
+            <button className={`option-btn option-wide ${scoringMode === 'golf' ? 'option-active' : ''}`} onClick={() => setScoringMode('golf')}>
+              ⛳ Traditional
+            </button>
+          </div>
+          <p className="text-sm text-gray text-center mt-8">
+            {scoringMode === 'total' ? 'Lowest total hits wins' : 'Par 3 per hole — score relative to par'}
+          </p>
+        </div>
 
         <div className="setup-field">
           <label className="setup-label">Number of Rounds</label>

@@ -60,7 +60,7 @@ export default function GameResults() {
         playerId: pid,
         name: game.players[pid].name,
         emoji: game.players[pid].emoji,
-        total: calculateTotalScore(game.scores?.[pid]),
+        total: calculateTotalScore(game.scores?.[pid], scoringMode),
         buckets: calculateBucketCount(game.scores?.[pid]),
       }))
       .sort((a, b) => a.total - b.total)
@@ -97,6 +97,7 @@ export default function GameResults() {
       type: game?.type || 'casual',
       result: isWinner ? 'win' : 'loss',
       score: me.total,
+      scoringMode,
     })
 
     return () => cancel?.()
@@ -107,6 +108,7 @@ export default function GameResults() {
   const winner = rankings[0]
   const totalHoles = game.settings?.holes || 9
   const isHost = game.host === player?.id
+  const scoringMode = game.settings?.scoringMode || 'total'
 
   return (
     <>

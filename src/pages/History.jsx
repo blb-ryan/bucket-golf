@@ -37,6 +37,7 @@ export default function History() {
                     </div>
                     <div className="history-score">
                       {g.score === 0 ? 'E' : g.score > 0 ? `+${g.score}` : g.score}
+                      {g.scoringMode === 'golf' && <span className="text-sm text-gray"> (golf)</span>}
                     </div>
                   </div>
                 </div>
