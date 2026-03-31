@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { calculateHoleScore, formatScore } from '../utils/scoring'
 import './ScoreInput.css'
 
-export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo }) {
-  const [hits, setHits] = useState(1)
-  const [bucket, setBucket] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
+export default function ScoreInput({ hole, onSubmit, onUndo, disabled, canUndo, savedScore }) {
+  const [hits, setHits] = useState(savedScore?.hits || 1)
+  const [bucket, setBucket] = useState(savedScore?.bucket || false)
+  const [submitted, setSubmitted] = useState(disabled)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [showBucketAnim, setShowBucketAnim] = useState(false)

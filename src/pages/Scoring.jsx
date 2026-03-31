@@ -296,6 +296,7 @@ export default function Scoring() {
               onUndo={handleUndoScore}
               disabled={hasSubmitted}
               canUndo={hasSubmitted}
+              savedScore={myScore}
             />
 
             {hasSubmitted && (
