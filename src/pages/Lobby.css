@@ -4,12 +4,3 @@
   justify-content: center;
   gap: 12px;
 }
-
-.lobby-badge-quick {
-  background: var(--yellow);
-  color: var(--dark);
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 800;
-}

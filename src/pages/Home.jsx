@@ -5,7 +5,7 @@ import { db, ref, get } from '../firebase'
 import Navigation from '../components/Navigation'
 import './Home.css'
 
-const VERSION = 'Mar 30 09:05';
+const VERSION = 'Mar 31 08:46';
 
 export default function Home() {
   const { player } = usePlayer()
@@ -81,10 +81,6 @@ export default function Home() {
         <p className="home-greeting">Hey, {player?.name || 'Golfer'}!</p>
 
         <div className="home-actions flex-col gap-12">
-          <button className="btn btn-red btn-lg btn-block home-quick" onClick={() => navigate('/quick-play')}>
-            <span>⚡</span> Quick Play
-          </button>
-
           <button className="btn btn-green btn-lg btn-block" onClick={() => navigate('/game-setup')}>
             <span>🏌️</span> Casual Game
           </button>

@@ -7,7 +7,6 @@ import GameSetup from './pages/GameSetup'
 import Lobby from './pages/Lobby'
 import Scoring from './pages/Scoring'
 import GameResults from './pages/GameResults'
-import QuickPlay from './pages/QuickPlay'
 import TournamentSetup from './pages/TournamentSetup'
 import TournamentLobby from './pages/TournamentLobby'
 import TournamentRound from './pages/TournamentRound'
@@ -44,7 +43,6 @@ function AppRoutes() {
       <Route path="/profile" element={<Profile />} />
       <Route path="/join" element={<JoinGame />} />
       <Route path="/game-setup" element={<GameSetup />} />
-      <Route path="/quick-play" element={<QuickPlay />} />
       <Route path="/lobby/:gameId" element={<Lobby />} />
       <Route path="/scoring/:gameId" element={<Scoring />} />
       <Route path="/results/:gameId" element={<GameResults />} />

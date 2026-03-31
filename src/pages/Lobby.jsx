@@ -64,7 +64,6 @@ export default function Lobby() {
 
         <div className="lobby-info mt-16 text-center">
           <span className="text-sm text-gray">{game.settings?.holes} holes</span>
-          {game.type === 'quickPlay' && <span className="lobby-badge-quick">Quick Play</span>}
         </div>
 
         <h3 className="mt-20 mb-12 fw-bold">Players ({playerList.length})</h3>
