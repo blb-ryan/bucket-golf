@@ -1,28 +1,138 @@
 {
   "rules": {
     "players": {
-      "$playerId": {
-        ".read": true,
-        ".write": true,
-        ".validate": "newData.hasChildren(['name', 'phone'])"
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        ".validate": "newData.hasChildren(['name', 'createdAt'])",
+        "name": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 32"
+        },
+        "phone": {
+          ".validate": "newData.isString() && newData.val().length <= 20"
+        },
+        "emoji": {
+          ".validate": "newData.isString() && newData.val().length <= 8"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "stats": {
+          ".validate": "newData.hasChildren()",
+          "gamesPlayed": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "wins": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "losses": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+          "avgScore": { ".validate": "newData.isNumber()" },
+          "bestRound": { ".validate": "newData.isNumber() || newData.val() == null" },
+          "buckets": { ".validate": "newData.isNumber() && newData.val() >= 0" }
+        }
       }
     },
-    "phoneIndex": {
-      "$phone": {
-        ".read": true,
-        ".write": true
-      }
-    },
+
     "games": {
       "$gameId": {
-        ".read": true,
-        ".write": true
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && (newData.child('host').val() === auth.uid || (newData.child('tournamentId').exists() && root.child('tournaments').child(newData.child('tournamentId').val()).child('host').val() === auth.uid))) || (!newData.exists() && (data.child('host').val() === auth.uid || (data.child('tournamentId').exists() && root.child('tournaments').child(data.child('tournamentId').val()).child('host').val() === auth.uid))))",
+
+        "host": {
+          ".write": "auth != null && (!data.exists() || data.val() === auth.uid)",
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 128"
+        },
+        "status": {
+          ".write": "auth != null && root.child('games').child($gameId).child('host').val() === auth.uid",
+          ".validate": "newData.isString() && newData.val().length <= 24"
+        },
+        "currentHole": {
+          ".write": "auth != null && root.child('games').child($gameId).child('host').val() === auth.uid",
+          ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 32"
+        },
+        "rematchGameId": {
+          ".write": "auth != null && root.child('games').child($gameId).child('players').child(auth.uid).exists()",
+          ".validate": "newData.isString() && newData.val().length <= 16"
+        },
+        "settings": {
+          ".validate": "newData.hasChildren()",
+          "holes": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 32" },
+          "scoringMode": { ".validate": "newData.isString() && (newData.val() === 'total' || newData.val() === 'golf')" },
+          "courseName": { ".validate": "newData.isString() && newData.val().length <= 64" }
+        },
+        "type": {
+          ".validate": "newData.isString() && newData.val().length <= 16"
+        },
+        "tournamentId": {
+          ".validate": "newData.isString() && newData.val().length <= 16"
+        },
+        "roundNumber": {
+          ".validate": "newData.isNumber()"
+        },
+        "groupNumber": {
+          ".validate": "newData.isNumber()"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+
+        "players": {
+          "$pUid": {
+            ".write": "auth != null && (auth.uid === $pUid || (root.child('games').child($gameId).child('tournamentId').exists() && root.child('tournaments').child(root.child('games').child($gameId).child('tournamentId').val()).child('host').val() === auth.uid))",
+            "name": { ".validate": "newData.isString() && newData.val().length <= 32" },
+            "emoji": { ".validate": "newData.isString() && newData.val().length <= 8" },
+            "joinedAt": { ".validate": "newData.isNumber()" }
+          }
+        },
+
+        "scores": {
+          "$pUid": {
+            ".write": "auth != null && (auth.uid === $pUid || root.child('games').child($gameId).child('host').val() === auth.uid)",
+            "$hole": {
+              ".validate": "$hole.matches(/^[0-9]+$/)",
+              "hits": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 50" },
+              "bucket": { ".validate": "newData.isBoolean()" },
+              "score": { ".validate": "newData.isNumber() && newData.val() >= -10 && newData.val() <= 50" }
+            }
+          }
+        }
       }
     },
+
     "tournaments": {
       "$tournamentId": {
-        ".read": true,
-        ".write": true
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && newData.child('host').val() === auth.uid) || (!newData.exists() && data.child('host').val() === auth.uid))",
+
+        "host": {
+          ".write": "auth != null && (!data.exists() || data.val() === auth.uid)",
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 128"
+        },
+        "status": {
+          ".write": "auth != null && (root.child('tournaments').child($tournamentId).child('host').val() === auth.uid || root.child('tournaments').child($tournamentId).child('playerInfo').child(auth.uid).exists())",
+          ".validate": "newData.isString() && newData.val().length <= 24"
+        },
+        "settings": {
+          ".validate": "newData.hasChildren()",
+          "rounds": { ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 16" },
+          "groupSize": { ".validate": "newData.isNumber() && newData.val() >= 2 && newData.val() <= 8" },
+          "scoringMode": { ".validate": "newData.isString() && (newData.val() === 'total' || newData.val() === 'golf')" },
+          "advancement": { ".validate": "newData.isString() && (newData.val() === 'auto' || newData.val() === 'manual')" }
+        },
+        "rounds": {
+          ".write": "auth != null && root.child('tournaments').child($tournamentId).child('host').val() === auth.uid"
+        },
+        "leaderboard": {
+          ".write": "auth != null && root.child('tournaments').child($tournamentId).child('host').val() === auth.uid"
+        },
+        "createdAt": {
+          ".validate": "newData.isNumber()"
+        },
+
+        "playerInfo": {
+          "$pUid": {
+            ".write": "auth != null && (auth.uid === $pUid || root.child('tournaments').child($tournamentId).child('host').val() === auth.uid)",
+            "name": { ".validate": "newData.isString() && newData.val().length <= 32" },
+            "emoji": { ".validate": "newData.isString() && newData.val().length <= 8" },
+            "joinedAt": { ".validate": "newData.isNumber()" }
+          }
+        }
       }
     }
   }

@@ -1,48 +1,45 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { db, ref, set, get, update } from '../firebase'
+import { db, auth, ref, set, get, update, signInAnonymously, onAuthStateChanged } from '../firebase'
 import { getPlayerEmoji } from '../utils/emojis'
 
 const PlayerContext = createContext(null)
 
 export function PlayerProvider({ children }) {
   const [player, setPlayer] = useState(null)
+  const [uid, setUid] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const cached = localStorage.getItem('bucketgolf_player')
-    if (cached) {
-      try {
-        const parsed = JSON.parse(cached)
-        setPlayer(parsed)
-        refreshFromFirebase(parsed.id)
-      } catch {
-        localStorage.removeItem('bucketgolf_player')
+    const unsub = onAuthStateChanged(auth, async user => {
+      if (!user) {
+        try {
+          await signInAnonymously(auth)
+        } catch (e) {
+          console.error('Anonymous sign-in failed:', e)
+          setLoading(false)
+        }
+        return
       }
-    }
-    setLoading(false)
+
+      setUid(user.uid)
+      try {
+        const snap = await get(ref(db, `players/${user.uid}`))
+        if (snap.exists()) {
+          setPlayer({ id: user.uid, ...snap.val() })
+        } else {
+          setPlayer(null)
+        }
+      } catch (e) {
+        console.warn('Could not load player:', e)
+      }
+      setLoading(false)
+    })
+    return () => unsub()
   }, [])
 
-  async function refreshFromFirebase(playerId) {
-    try {
-      const snap = await get(ref(db, `players/${playerId}`))
-      if (snap.exists()) {
-        const data = { id: playerId, ...snap.val() }
-        setPlayer(data)
-        localStorage.setItem('bucketgolf_player', JSON.stringify(data))
-      }
-    } catch (e) {
-      console.warn('Could not refresh player from Firebase:', e)
-    }
-  }
-
   async function createProfile(name, phone) {
-    const cleanPhone = phone.replace(/\D/g, '')
-    const existingSnap = await get(ref(db, `phoneIndex/${cleanPhone}`))
-    if (existingSnap.exists()) {
-      throw new Error('PHONE_EXISTS')
-    }
-
-    const playerId = 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+    if (!uid) throw new Error('NOT_AUTHENTICATED')
+    const cleanPhone = (phone || '').replace(/\D/g, '')
     const playerData = {
       name,
       phone: cleanPhone,
@@ -59,65 +56,45 @@ export function PlayerProvider({ children }) {
       gameHistory: [],
     }
 
-    await set(ref(db, `players/${playerId}`), playerData)
-    await set(ref(db, `phoneIndex/${cleanPhone}`), playerId)
+    await set(ref(db, `players/${uid}`), playerData)
 
-    const full = { id: playerId, ...playerData }
+    const full = { id: uid, ...playerData }
     setPlayer(full)
-    localStorage.setItem('bucketgolf_player', JSON.stringify(full))
-    return full
-  }
-
-  async function recoverProfile(phone) {
-    const cleanPhone = phone.replace(/\D/g, '')
-    const snap = await get(ref(db, `phoneIndex/${cleanPhone}`))
-    if (!snap.exists()) {
-      throw new Error('NOT_FOUND')
-    }
-    const playerId = snap.val()
-    const playerSnap = await get(ref(db, `players/${playerId}`))
-    if (!playerSnap.exists()) {
-      throw new Error('NOT_FOUND')
-    }
-    const full = { id: playerId, ...playerSnap.val() }
-    setPlayer(full)
-    localStorage.setItem('bucketgolf_player', JSON.stringify(full))
     return full
   }
 
   async function updateName(newName) {
-    if (!player) return
-    await update(ref(db, `players/${player.id}`), { name: newName })
-    const updated = { ...player, name: newName }
-    setPlayer(updated)
-    localStorage.setItem('bucketgolf_player', JSON.stringify(updated))
+    if (!player || !uid) return
+    await update(ref(db, `players/${uid}`), { name: newName })
+    setPlayer({ ...player, name: newName })
   }
 
   async function updateStats(newStats) {
-    if (!player) return
-    await update(ref(db, `players/${player.id}/stats`), newStats)
-    const updated = { ...player, stats: newStats }
-    setPlayer(updated)
-    localStorage.setItem('bucketgolf_player', JSON.stringify(updated))
+    if (!player || !uid) return
+    await update(ref(db, `players/${uid}/stats`), newStats)
+    setPlayer({ ...player, stats: newStats })
   }
 
   async function addGameToHistory(entry) {
-    if (!player) return
+    if (!player || !uid) return
     const history = [...(player.gameHistory || []), entry].slice(-50)
-    await update(ref(db, `players/${player.id}`), { gameHistory: history })
-    const updated = { ...player, gameHistory: history }
-    setPlayer(updated)
-    localStorage.setItem('bucketgolf_player', JSON.stringify(updated))
+    await update(ref(db, `players/${uid}`), { gameHistory: history })
+    setPlayer({ ...player, gameHistory: history })
   }
 
-  function logout() {
+  async function logout() {
+    try {
+      await auth.signOut()
+    } catch (e) {
+      console.warn('Sign-out failed:', e)
+    }
     setPlayer(null)
-    localStorage.removeItem('bucketgolf_player')
+    setUid(null)
   }
 
   return (
     <PlayerContext.Provider value={{
-      player, loading, createProfile, recoverProfile, updateName, updateStats, addGameToHistory, logout, refreshFromFirebase: () => player && refreshFromFirebase(player.id)
+      player, loading, createProfile, updateName, updateStats, addGameToHistory, logout,
     }}>
       {children}
     </PlayerContext.Provider>

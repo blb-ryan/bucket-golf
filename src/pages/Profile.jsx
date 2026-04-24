@@ -5,17 +5,15 @@ import Navigation from '../components/Navigation'
 import './Profile.css'
 
 export default function Profile() {
-  const { player, createProfile, recoverProfile, updateName, logout } = usePlayer()
+  const { player, createProfile, updateName, logout } = usePlayer()
   const navigate = useNavigate()
 
-  // If no player, show creation/recovery
-  if (!player) return <ProfileSetup createProfile={createProfile} recoverProfile={recoverProfile} />
+  if (!player) return <ProfileSetup createProfile={createProfile} />
 
   return <ProfileView player={player} updateName={updateName} logout={logout} navigate={navigate} />
 }
 
-function ProfileSetup({ createProfile, recoverProfile }) {
-  const [mode, setMode] = useState('create')
+function ProfileSetup({ createProfile }) {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [error, setError] = useState('')
@@ -23,28 +21,13 @@ function ProfileSetup({ createProfile, recoverProfile }) {
 
   async function handleCreate(e) {
     e.preventDefault()
-    if (!name.trim() || !phone.trim()) { setError('Name and phone number required'); return }
-    if (phone.replace(/\D/g, '').length < 7) { setError('Enter a valid phone number'); return }
+    if (!name.trim()) { setError('Name is required'); return }
     setLoading(true)
     setError('')
     try {
       await createProfile(name.trim(), phone)
     } catch (err) {
-      if (err.message === 'PHONE_EXISTS') setError('This phone number is already registered. Try recovering your profile instead.')
-      else setError('Something went wrong. Try again.')
-    }
-    setLoading(false)
-  }
-
-  async function handleRecover(e) {
-    e.preventDefault()
-    if (!phone.trim()) { setError('Enter your phone number'); return }
-    setLoading(true)
-    setError('')
-    try {
-      await recoverProfile(phone)
-    } catch (err) {
-      if (err.message === 'NOT_FOUND') setError('No profile found with that number.')
+      if (err.message === 'NOT_AUTHENTICATED') setError('Still connecting. Try again in a moment.')
       else setError('Something went wrong. Try again.')
     }
     setLoading(false)
@@ -61,34 +44,14 @@ function ProfileSetup({ createProfile, recoverProfile }) {
             <p className="text-gray">Create your player profile to get started</p>
           </div>
 
-          <div className="profile-tabs">
-            <button className={`profile-tab ${mode === 'create' ? 'active' : ''}`} onClick={() => { setMode('create'); setError('') }}>
-              New Profile
+          <form className="flex-col gap-12 mt-16" onSubmit={handleCreate}>
+            <input className="input" placeholder="Your Name" value={name} onChange={e => setName(e.target.value)} maxLength={20} />
+            <input className="input" placeholder="Phone Number (optional)" value={phone} onChange={e => setPhone(e.target.value)} type="tel" />
+            {error && <p className="text-red text-sm text-center">{error}</p>}
+            <button className="btn btn-red btn-lg btn-block mt-8" type="submit" disabled={loading}>
+              {loading ? 'Creating...' : 'Create Profile'}
             </button>
-            <button className={`profile-tab ${mode === 'recover' ? 'active' : ''}`} onClick={() => { setMode('recover'); setError('') }}>
-              I Have One
-            </button>
-          </div>
-
-          {mode === 'create' ? (
-            <form className="flex-col gap-12 mt-16" onSubmit={handleCreate}>
-              <input className="input" placeholder="Your Name" value={name} onChange={e => setName(e.target.value)} maxLength={20} />
-              <input className="input" placeholder="Phone Number" value={phone} onChange={e => setPhone(e.target.value)} type="tel" />
-              {error && <p className="text-red text-sm text-center">{error}</p>}
-              <button className="btn btn-red btn-lg btn-block mt-8" type="submit" disabled={loading}>
-                {loading ? 'Creating...' : 'Create Profile'}
-              </button>
-            </form>
-          ) : (
-            <form className="flex-col gap-12 mt-16" onSubmit={handleRecover}>
-              <p className="text-sm text-gray text-center">Enter the phone number you used before</p>
-              <input className="input" placeholder="Phone Number" value={phone} onChange={e => setPhone(e.target.value)} type="tel" />
-              {error && <p className="text-red text-sm text-center">{error}</p>}
-              <button className="btn btn-green btn-lg btn-block mt-8" type="submit" disabled={loading}>
-                {loading ? 'Looking up...' : 'Find My Profile'}
-              </button>
-            </form>
-          )}
+          </form>
         </div>
       </div>
     </>
@@ -108,6 +71,11 @@ function ProfileView({ player, updateName, logout, navigate }) {
     setEditing(false)
   }
 
+  async function handleSwitchProfile() {
+    await logout()
+    navigate('/')
+  }
+
   return (
     <>
       <Navigation title="My Profile" showBack />
@@ -125,7 +93,9 @@ function ProfileView({ player, updateName, logout, navigate }) {
               <span className="profile-edit">✏️</span>
             </div>
           )}
-          <p className="text-sm text-gray mt-8">📱 {player.phone?.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3')}</p>
+          {player.phone && (
+            <p className="text-sm text-gray mt-8">📱 {player.phone?.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3')}</p>
+          )}
         </div>
 
         <h3 className="mt-24 mb-12 fw-bold">Lifetime Stats</h3>
@@ -156,7 +126,7 @@ function ProfileView({ player, updateName, logout, navigate }) {
           </div>
         </div>
 
-        <button className="btn btn-outline btn-block mt-24" onClick={() => { logout(); navigate('/') }}>
+        <button className="btn btn-outline btn-block mt-24" onClick={handleSwitchProfile}>
           Switch Profile
         </button>
       </div>

@@ -26,47 +26,24 @@ Based on real Bucket Golf rules:
 ### 1. Firebase Project
 
 1. Go to [Firebase Console](https://console.firebase.google.com) and create a new project (free tier)
-2. In the project, go to **Build > Realtime Database** and click **Create Database**
-3. Select a region and start in **test mode** (or use the rules below)
-4. Go to **Project Settings > General** and scroll to "Your apps"
-5. Click the web icon (`</>`) to register a web app
-6. Copy the Firebase config values
+2. In the project, go to **Build > Realtime Database** and click **Create Database**. Select a region. Any starter rules are fine; they'll be replaced in step 3.
+3. Go to **Build > Authentication > Sign-in method** and enable **Anonymous** sign-in. This is required — every client needs an auth uid for rules to grant access.
+4. Go to **Project Settings > General** and scroll to "Your apps". Click the web icon (`</>`) to register a web app and copy the Firebase config values.
 
 ### 2. Database Rules
 
-In Firebase Console > Realtime Database > Rules, paste the contents of `firebase-rules.json`:
+Rules are versioned at `firebase-rules.json`. Identity is the anonymous-auth uid; writes are scoped by ownership (host for games/tournaments, self for player records).
 
-```json
-{
-  "rules": {
-    "players": {
-      "$playerId": {
-        ".read": true,
-        ".write": true,
-        ".validate": "newData.hasChildren(['name', 'phone'])"
-      }
-    },
-    "phoneIndex": {
-      "$phone": {
-        ".read": true,
-        ".write": true
-      }
-    },
-    "games": {
-      "$gameId": {
-        ".read": true,
-        ".write": true
-      }
-    },
-    "tournaments": {
-      "$tournamentId": {
-        ".read": true,
-        ".write": true
-      }
-    }
-  }
-}
+Deploy with the Firebase CLI:
+
+```bash
+npm install -g firebase-tools
+firebase login
+firebase use bucket-golf-7e95c   # replace with your project id if different
+firebase deploy --only database
 ```
+
+Or paste the contents of `firebase-rules.json` into the Realtime Database **Rules** tab in the console.
 
 ### 3. Environment Variables
 
